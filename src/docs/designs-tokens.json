@@ -1,0 +1,287 @@
+{
+    "meta": {
+        "name": "BlueprintAI Design System",
+        "version": "1.0.0",
+        "description": "Design tokens for Figma import - Use plugins like 'Tokens Studio' or 'Figma Tokens' to import this file"
+    },
+    "colors": {
+        "brand": {
+            "primary": {
+                "value": "#4A90E2",
+                "hex": "#4A90E2",
+                "rgb": "rgb(74, 144, 226)",
+                "oklch": "oklch(0.65 0.2 250)",
+                "description": "Primary blue - buttons, links, accents"
+            },
+            "primaryHover": {
+                "value": "#3A7BC8",
+                "hex": "#3A7BC8",
+                "rgb": "rgb(58, 123, 200)",
+                "description": "Primary blue hover state"
+            },
+            "primaryGlow": {
+                "value": "rgba(74, 144, 226, 0.4)",
+                "description": "Glow effect for primary elements"
+            }
+        },
+        "background": {
+            "base": {
+                "value": "#0D1117",
+                "hex": "#0D1117",
+                "rgb": "rgb(13, 17, 23)",
+                "oklch": "oklch(0.12 0.01 250)",
+                "description": "Main app background"
+            },
+            "card": {
+                "value": "#161B22",
+                "hex": "#161B22",
+                "rgb": "rgb(22, 27, 34)",
+                "oklch": "oklch(0.16 0.01 250)",
+                "description": "Card/panel backgrounds"
+            },
+            "elevated": {
+                "value": "#1C2128",
+                "hex": "#1C2128",
+                "rgb": "rgb(28, 33, 40)",
+                "oklch": "oklch(0.18 0.01 250)",
+                "description": "Elevated surfaces, hover states"
+            },
+            "secondary": {
+                "value": "#21262D",
+                "hex": "#21262D",
+                "rgb": "rgb(33, 38, 45)",
+                "oklch": "oklch(0.22 0.01 250)",
+                "description": "Secondary backgrounds, inputs"
+            }
+        },
+        "text": {
+            "primary": {
+                "value": "#F0F6FC",
+                "hex": "#F0F6FC",
+                "rgb": "rgb(240, 246, 252)",
+                "oklch": "oklch(0.95 0 0)",
+                "description": "Primary text color"
+            },
+            "secondary": {
+                "value": "#8B949E",
+                "hex": "#8B949E",
+                "rgb": "rgb(139, 148, 158)",
+                "oklch": "oklch(0.65 0 0)",
+                "description": "Secondary/muted text"
+            },
+            "tertiary": {
+                "value": "#6E7681",
+                "hex": "#6E7681",
+                "rgb": "rgb(110, 118, 129)",
+                "description": "Tertiary/placeholder text"
+            }
+        },
+        "border": {
+            "default": {
+                "value": "#30363D",
+                "hex": "#30363D",
+                "rgb": "rgb(48, 54, 61)",
+                "oklch": "oklch(0.28 0.01 250)",
+                "description": "Default border color"
+            },
+            "muted": {
+                "value": "#21262D",
+                "hex": "#21262D",
+                "description": "Subtle border color"
+            }
+        },
+        "semantic": {
+            "success": {
+                "value": "#3FB950",
+                "hex": "#3FB950",
+                "rgb": "rgb(63, 185, 80)",
+                "description": "Success states, completed"
+            },
+            "successBg": {
+                "value": "rgba(63, 185, 80, 0.15)",
+                "description": "Success background"
+            },
+            "warning": {
+                "value": "#D29922",
+                "hex": "#D29922",
+                "rgb": "rgb(210, 153, 34)",
+                "description": "Warning states"
+            },
+            "error": {
+                "value": "#F85149",
+                "hex": "#F85149",
+                "rgb": "rgb(248, 81, 73)",
+                "description": "Error states, legacy code highlight"
+            },
+            "errorBg": {
+                "value": "rgba(248, 81, 73, 0.15)",
+                "description": "Error background for code highlighting"
+            },
+            "info": {
+                "value": "#58A6FF",
+                "hex": "#58A6FF",
+                "rgb": "rgb(88, 166, 255)",
+                "description": "Info states"
+            }
+        },
+        "syntax": {
+            "keyword": {
+                "value": "#FF7B72",
+                "description": "Code keywords (public, class, function)"
+            },
+            "string": {
+                "value": "#A5D6FF",
+                "description": "String literals"
+            },
+            "comment": {
+                "value": "#8B949E",
+                "description": "Code comments"
+            },
+            "function": {
+                "value": "#D2A8FF",
+                "description": "Function names"
+            },
+            "variable": {
+                "value": "#FFA657",
+                "description": "Variables"
+            },
+            "type": {
+                "value": "#79C0FF",
+                "description": "Types and classes"
+            }
+        },
+        "methods": {
+            "get": {
+                "value": "#3FB950",
+                "description": "HTTP GET method badge"
+            },
+            "post": {
+                "value": "#58A6FF",
+                "description": "HTTP POST method badge"
+            },
+            "put": {
+                "value": "#D29922",
+                "description": "HTTP PUT method badge"
+            },
+            "delete": {
+                "value": "#F85149",
+                "description": "HTTP DELETE method badge"
+            }
+        }
+    },
+    "typography": {
+        "fontFamily": {
+            "sans": {
+                "value": "Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "description": "Primary font for UI"
+            },
+            "mono": {
+                "value": "Geist Mono, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace",
+                "description": "Monospace font for code"
+            }
+        },
+        "fontSize": {
+            "xs": {
+                "value": "12px",
+                "lineHeight": "16px"
+            },
+            "sm": {
+                "value": "14px",
+                "lineHeight": "20px"
+            },
+            "base": {
+                "value": "16px",
+                "lineHeight": "24px"
+            },
+            "lg": {
+                "value": "18px",
+                "lineHeight": "28px"
+            },
+            "xl": {
+                "value": "20px",
+                "lineHeight": "28px"
+            },
+            "2xl": {
+                "value": "24px",
+                "lineHeight": "32px"
+            },
+            "3xl": {
+                "value": "30px",
+                "lineHeight": "36px"
+            }
+        },
+        "fontWeight": {
+            "normal": {
+                "value": "400"
+            },
+            "medium": {
+                "value": "500"
+            },
+            "semibold": {
+                "value": "600"
+            },
+            "bold": {
+                "value": "700"
+            }
+        }
+    },
+    "spacing": {
+        "0": "0px",
+        "1": "4px",
+        "2": "8px",
+        "3": "12px",
+        "4": "16px",
+        "5": "20px",
+        "6": "24px",
+        "8": "32px",
+        "10": "40px",
+        "12": "48px",
+        "16": "64px",
+        "20": "80px",
+        "24": "96px"
+    },
+    "borderRadius": {
+        "none": "0px",
+        "sm": "6px",
+        "md": "8px",
+        "lg": "10px",
+        "xl": "14px",
+        "2xl": "16px",
+        "full": "9999px"
+    },
+    "shadows": {
+        "sm": {
+            "value": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+            "description": "Small shadow"
+        },
+        "md": {
+            "value": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)",
+            "description": "Medium shadow"
+        },
+        "lg": {
+            "value": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)",
+            "description": "Large shadow"
+        },
+        "glow": {
+            "value": "0 0 20px rgba(74, 144, 226, 0.3)",
+            "description": "Blue glow effect"
+        },
+        "glowStrong": {
+            "value": "0 0 40px rgba(74, 144, 226, 0.4)",
+            "description": "Strong blue glow for active states"
+        }
+    },
+    "effects": {
+        "blur": {
+            "sm": "4px",
+            "md": "8px",
+            "lg": "16px",
+            "xl": "24px"
+        },
+        "transition": {
+            "fast": "150ms ease",
+            "normal": "200ms ease",
+            "slow": "300ms ease"
+        }
+    }
+}
