@@ -25,24 +25,10 @@ export function Header() {
                             </svg>
                         </div>
 
-                        <span className="text-lg font-semibold text-foreground">BlueprintAI</span>
+                        <span className="text-lg font-semibold text-foreground">Bob Architec Legacy Lens</span>
                     </Link>
 
                     <nav className="flex items-center gap-6">
-                        <Link
-                            href="/analyze"
-                            className="text-sm font-medium text-primary hover:text-primary/80"
-                        >
-                            Analyze
-                        </Link>
-
-                        <Link
-                            href="/projects"
-                            className="text-sm font-medium text-muted-foreground hover:text-foreground"
-                        >
-                            Projects
-                        </Link>
-
                         <Link
                             href="/docs"
                             className="text-sm font-medium text-muted-foreground hover:text-foreground"

@@ -61,7 +61,6 @@ export default function BlueprintAI() {
         </div>
 
         {currentView === "analyze" ? (
-          /* Smart Analysis Dashboard */
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-foreground">
@@ -70,25 +69,27 @@ export default function BlueprintAI() {
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
 
-            <div className="max-w-3xl">
-              <UploadZone onUpload={handleUpload} onCodePaste={handleCodePaste} />
-            </div>
-
-            {isAnalyzing && (
-              <div className="max-w-3xl">
-                <AnalysisPanel isAnalyzing={isAnalyzing} onComplete={handleAnalysisComplete} />
+            <div className="flex gap-6 items-start">
+              <div className="flex-1 min-w-0">
+                <UploadZone onUpload={handleUpload} onCodePaste={handleCodePaste} />
               </div>
-            )}
 
-            {analysisComplete && (
-              <Button
-                className="gap-2"
-                onClick={() => setCurrentView("blueprint")}
-              >
-                View Blueprint
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            )}
+              {isAnalyzing && (
+                <div className="flex-1 min-w-0 flex flex-col gap-4">
+                  <AnalysisPanel isAnalyzing={isAnalyzing} onComplete={handleAnalysisComplete} />
+
+                  {analysisComplete && (
+                    <Button
+                      className="gap-2 self-end"
+                      onClick={() => setCurrentView("blueprint")}
+                    >
+                      View Blueprint
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           /* The Architect's Blueprint (Output) */
