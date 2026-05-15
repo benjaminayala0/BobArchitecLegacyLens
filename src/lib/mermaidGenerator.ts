@@ -1,41 +1,27 @@
-export interface Field {
-  name: string;
-  type: string;
-  primary_key?: boolean;
-  foreign_key?: string;
-}
+/**
+ * Mermaid ER Diagram Generator
+ * 
+ * Transforms IBM Bob's blueprint into Mermaid.js ER diagram syntax.
+ */
 
-export interface Entity {
-  name: string;
-  table: string;
-  fields: Field[];
-}
-
-export interface Relationship {
-  from: string;
-  to: string;
-  type: string; // "one-to-one", "one-to-many", "many-to-one", "many-to-many"
-  description?: string;
-}
-
-export interface BobBlueprint {
-  entities: Entity[];
-  relationships: Relationship[];
-  // ... omited folder structure for this specific function
-}
+import { BobBlueprint, Entity, Field, Relationship, validateBlueprint } from '@/types/blueprint';
 
 /**
  * Transforms the IBM Bob JSON Blueprint into a valid Mermaid.js ER Diagram string.
+ * @param blueprint - The analyzed blueprint from IBM Bob
+ * @returns Mermaid diagram syntax as a string
+ * @throws {Error} If blueprint is invalid or missing required data
  */
 export function generateMermaidERDiagram(blueprint: BobBlueprint): string {
-  if (!blueprint || !blueprint.entities) return "";
+  // Validate the blueprint structure
+  validateBlueprint(blueprint);
 
   let mermaidStr = "erDiagram\n";
 
   // 1. Define Entities and Fields
-  blueprint.entities.forEach((entity) => {
+  blueprint.entities.forEach((entity: Entity) => {
     mermaidStr += `    ${entity.name} {\n`;
-    entity.fields.forEach((field) => {
+    entity.fields.forEach((field: Field) => {
       const type = field.type.replace(/\s+/g, "_"); // Mermaid doesn't like spaces in types
       const pkMarker = field.primary_key ? " PK" : "";
       const fkMarker = field.foreign_key ? " FK" : "";
@@ -45,11 +31,11 @@ export function generateMermaidERDiagram(blueprint: BobBlueprint): string {
   });
 
   // 2. Define Relationships
-  if (blueprint.relationships) {
-    blueprint.relationships.forEach((rel) => {
+  if (blueprint.relationships && blueprint.relationships.length > 0) {
+    blueprint.relationships.forEach((rel: Relationship) => {
       let relationshipLine = "";
       
-      // Determine Mermaid cardinality syntax
+      // Determine Mermaid cardinality syntax based on relationship type
       switch (rel.type) {
         case "one-to-many":
           relationshipLine = "||--o{";
@@ -64,7 +50,8 @@ export function generateMermaidERDiagram(blueprint: BobBlueprint): string {
           relationshipLine = "}o--o{";
           break;
         default:
-          relationshipLine = "--"; // fallback
+          // TypeScript will catch this at compile time due to RelationshipType union
+          relationshipLine = "--"; // fallback for runtime safety
       }
 
       const label = rel.description ? ` : "${rel.description}"` : " : relates";
@@ -74,3 +61,5 @@ export function generateMermaidERDiagram(blueprint: BobBlueprint): string {
 
   return mermaidStr;
 }
+
+// Made with Bob
