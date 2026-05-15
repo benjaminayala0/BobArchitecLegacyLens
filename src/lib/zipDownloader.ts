@@ -1,3 +1,10 @@
+/**
+ * ZIP Downloader Utility
+ * 
+ * Creates and downloads ZIP files containing folder structures with content.
+ * Browser-only module - will throw error if used in SSR context.
+ */
+
 import JSZip from 'jszip';
 
 /**
@@ -50,7 +57,7 @@ const addToZip = (zip: JSZip, node: FolderNode, currentPath: string = ''): void 
  * @returns Dummy content string
  */
 const generateDummyContent = (fileName: string): string => {
-  const extension = fileName.split('.').pop()?.toLowerCase();
+  const extension = fileName.split('.').pop()?.toLowerCase() ?? 'txt';
 
   switch (extension) {
     case 'ts':
@@ -151,13 +158,25 @@ export function adaptJsonToFolderNodes(jsonObj: Record<string, any>): FolderNode
 
 /**
  * Downloads a zip file containing the folder structure
+ * 
+ * ⚠️ BROWSER-ONLY: This function uses DOM APIs and will throw an error in SSR context.
+ * 
  * @param folderStructure - JSON object representing the folder tree
  * @param zipFileName - Optional custom name for the zip file (default: 'blueprint.zip')
+ * @throws {Error} If called in a non-browser environment (SSR)
  */
 export const downloadZip = async (
   folderStructure: FolderNode | FolderNode[],
   zipFileName: string = 'blueprint.zip'
 ): Promise<void> => {
+  // SSR Safety Check - Critical Issue #5 Fix
+  if (typeof window === 'undefined') {
+    throw new Error(
+      'downloadZip() can only be called in browser environment. ' +
+      'This function uses DOM APIs (document, URL.createObjectURL) which are not available during SSR.'
+    );
+  }
+
   try {
     // Create a new JSZip instance
     const zip = new JSZip();
@@ -233,3 +252,5 @@ export const downloadZip = async (
  * const nodes = adaptJsonToFolderNodes(nestedJson);
  * await downloadZip(nodes, 'my-project.zip');
  */
+
+// Made with Bob

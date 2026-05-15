@@ -45,7 +45,7 @@
  *   'API.md': apiMarkdown
  * });
  *
- * // Download as ZIP
+ * // Download as ZIP (browser-only)
  * await downloadZip(files, 'bob-analysis-output.zip');
  * ```
  * 
@@ -55,7 +55,8 @@
  *   generateMermaidERDiagram, 
  *   generateSqlSchema, 
  *   generateApiContract,
- *   downloadAsZip,
+ *   downloadZip,
+ *   adaptJsonToFolderNodes,
  *   type BobBlueprint 
  * } from '@/lib';
  * 
@@ -85,17 +86,33 @@
  * ```
  */
 
-// Export all types and functions from mermaidGenerator
-export type { Field, Entity, Relationship, BobBlueprint } from './mermaidGenerator';
+// Export all types from the centralized types file
+export type { 
+  Field, 
+  Entity, 
+  Relationship, 
+  RelationshipType,
+  FolderStructure,
+  BobBlueprint 
+} from '@/types/blueprint';
+
+// Export validation utilities
+export { 
+  validateBlueprint, 
+  sanitizeSqlIdentifier, 
+  isValidSqlIdentifier 
+} from '@/types/blueprint';
+
+// Export Mermaid diagram generator
 export { generateMermaidERDiagram } from './mermaidGenerator';
 
-// Export all functions from sqlGenerator
+// Export SQL schema generator
 export { generateSqlSchema } from './sqlGenerator';
 
-// Export all functions from apiContractGenerator
+// Export API contract generator
 export { generateApiContract } from './apiContractGenerator';
 
-// Export all types and functions from zipDownloader
+// Export ZIP downloader utilities
 export type { FolderNode } from './zipDownloader';
 export { downloadZip, adaptJsonToFolderNodes } from './zipDownloader';
 

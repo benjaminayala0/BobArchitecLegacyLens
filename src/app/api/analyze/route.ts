@@ -1,37 +1,12 @@
+/**
+ * Mock API Route - IBM Bob Analysis Endpoint
+ * 
+ * Simulates IBM Bob's analysis of legacy code.
+ * Returns a mock blueprint for hotel management system.
+ */
+
 import { NextResponse } from 'next/server';
-
-interface Field {
-  name: string;
-  type: string;
-  primary_key?: boolean;
-  foreign_key?: string;
-  auto_increment?: boolean;
-  nullable?: boolean;
-  unique?: boolean;
-}
-
-interface Entity {
-  name: string;
-  table: string;
-  fields: Field[];
-}
-
-interface Relationship {
-  from: string;
-  to: string;
-  type: string; // "one-to-one", "one-to-many", "many-to-one", "many-to-many"
-  description?: string;
-}
-
-interface FolderStructure {
-  [key: string]: string[] | FolderStructure;
-}
-
-interface BobBlueprint {
-  entities: Entity[];
-  relationships: Relationship[];
-  suggested_folder_structure: FolderStructure;
-}
+import type { BobBlueprint } from '@/types/blueprint';
 
 /**
  * Mock API route that simulates IBM Bob's analysis of legacy code.
