@@ -3,14 +3,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import type { ApiEndpoint } from "@/lib/apiContractGenerator"
 
-interface Endpoint {
-    endpoint: string
-    method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
-    description: string
+interface ApiContractProps {
+    endpoints?: ApiEndpoint[]
 }
 
-const endpoints: Endpoint[] = [
+const defaultEndpoints: ApiEndpoint[] = [
     { endpoint: "/api/v1/users", method: "GET", description: "List all users with pagination" },
     { endpoint: "/api/v1/users/:id", method: "GET", description: "Get user by ID" },
     { endpoint: "/api/v1/users", method: "POST", description: "Create new user" },
@@ -31,7 +30,8 @@ const methodColors: Record<string, string> = {
     PATCH: "bg-chart-3/20 text-chart-3",
 }
 
-export function ApiContract() {
+export function ApiContract({ endpoints: propsEndpoints }: ApiContractProps) {
+    const endpoints = propsEndpoints || defaultEndpoints
     return (
         <Card className="bg-card border-border h-full">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">

@@ -1,8 +1,13 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Maximize2 } from "lucide-react"
+import { Maximize2, Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useEffect, useRef } from "react"
+
+interface ERDiagramProps {
+    mermaidCode?: string
+}
 
 interface Entity {
     id: string
@@ -18,7 +23,7 @@ interface Relation {
     type: "one-to-many" | "many-to-many" | "one-to-one"
 }
 
-const entities: Entity[] = [
+const defaultEntities: Entity[] = [
     {
         id: "users",
         name: "Users",
@@ -72,7 +77,26 @@ const relations: Relation[] = [
     { from: "products", to: "order_items", type: "one-to-many" },
 ]
 
-export function ERDiagram() {
+export function ERDiagram({ mermaidCode }: ERDiagramProps) {
+    const mermaidRef = useRef<HTMLDivElement>(null)
+    const entities = defaultEntities // Use default for now, can be parsed from mermaidCode later
+    
+    useEffect(() => {
+        if (mermaidCode && mermaidRef.current) {
+            // Dynamically import and render Mermaid
+            import('mermaid').then((mermaid) => {
+                mermaid.default.initialize({ startOnLoad: true, theme: 'dark' })
+                mermaid.default.contentLoaded()
+            })
+        }
+    }, [mermaidCode])
+
+    const handleCopy = () => {
+        if (mermaidCode) {
+            navigator.clipboard.writeText(mermaidCode)
+        }
+    }
+
     return (
         <Card className="bg-card border-border h-full">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">

@@ -4,7 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronDown, Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-const schemaSQL = `-- Generated PostgreSQL Schema
+interface DatabaseSchemaProps {
+  sqlSchema?: string
+}
+
+const defaultSchemaSQL = `-- Generated PostgreSQL Schema
 -- BlueprintAI Modernization Output
 
 CREATE TABLE users (
@@ -46,7 +50,9 @@ CREATE TABLE order_items (
 CREATE INDEX idx_orders_user ON orders(user_id);
 CREATE INDEX idx_order_items_order ON order_items(order_id);`
 
-export function DatabaseSchema() {
+export function DatabaseSchema({ sqlSchema }: DatabaseSchemaProps) {
+    const schemaSQL = sqlSchema || defaultSchemaSQL
+    
     const handleCopy = () => {
         navigator.clipboard.writeText(schemaSQL)
     }

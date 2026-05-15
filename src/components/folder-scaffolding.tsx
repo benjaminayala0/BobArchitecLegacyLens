@@ -4,15 +4,21 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronRight, ChevronDown, Folder, FolderOpen, FileCode, FileText, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import type { FolderNode } from "@/lib/zipGenerator"
+
+interface FolderScaffoldingProps {
+    folderStructure?: unknown
+}
 
 interface TreeNode {
     name: string
     type: "folder" | "file"
     children?: TreeNode[]
     fileType?: "ts" | "json" | "config" | "md"
+    content?: string
 }
 
-const folderStructure: TreeNode = {
+const defaultFolderStructure: TreeNode = {
     name: "Clean Architecture",
     type: "folder",
     children: [
@@ -149,7 +155,12 @@ function TreeItem({ node, depth = 0 }: { node: TreeNode; depth?: number }) {
     )
 }
 
-export function FolderScaffolding() {
+export function FolderScaffolding({ folderStructure: propsFolderStructure }: FolderScaffoldingProps) {
+    // Convert the props structure to TreeNode format
+    const folderStructure = propsFolderStructure
+        ? (propsFolderStructure as TreeNode)
+        : defaultFolderStructure
+    
     return (
         <Card className="bg-card border-border h-full">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">

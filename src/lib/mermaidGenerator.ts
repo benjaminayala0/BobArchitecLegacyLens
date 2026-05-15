@@ -21,7 +21,7 @@ export interface Relationship {
 export interface BobBlueprint {
   entities: Entity[];
   relationships: Relationship[];
-  // ... omited folder structure for this specific function
+  suggested_folder_structure?: unknown;
 }
 
 /**
