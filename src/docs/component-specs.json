@@ -1,0 +1,725 @@
+{
+    "meta": {
+        "name": "BlueprintAI Component Specifications",
+        "version": "1.0.0",
+        "description": "Detailed component specifications for Figma recreation"
+    },
+    "layout": {
+        "viewport": {
+            "desktop": {
+                "width": "1440px",
+                "minWidth": "1024px"
+            },
+            "tablet": {
+                "width": "768px"
+            },
+            "mobile": {
+                "width": "375px"
+            }
+        },
+        "container": {
+            "maxWidth": "1400px",
+            "padding": "24px"
+        },
+        "grid": {
+            "columns": 12,
+            "gutter": "24px"
+        }
+    },
+    "components": {
+        "header": {
+            "description": "Main navigation header",
+            "dimensions": {
+                "height": "64px",
+                "padding": "16px 24px"
+            },
+            "style": {
+                "background": "transparent",
+                "borderBottom": "1px solid #30363D"
+            },
+            "children": {
+                "logo": {
+                    "dimensions": {
+                        "height": "32px"
+                    },
+                    "content": {
+                        "icon": "24x24px blue square with grid pattern",
+                        "text": "BlueprintAI",
+                        "textStyle": "font-semibold text-xl"
+                    }
+                },
+                "navigation": {
+                    "items": [
+                        "Analyze",
+                        "Projects",
+                        "Docs"
+                    ],
+                    "style": {
+                        "gap": "32px",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "activeColor": "#F0F6FC",
+                        "inactiveColor": "#8B949E",
+                        "hoverColor": "#F0F6FC"
+                    }
+                },
+                "avatar": {
+                    "dimensions": {
+                        "width": "32px",
+                        "height": "32px"
+                    },
+                    "style": {
+                        "borderRadius": "9999px"
+                    }
+                }
+            }
+        },
+        "uploadZone": {
+            "description": "Drag and drop zone for legacy code",
+            "dimensions": {
+                "minHeight": "280px",
+                "padding": "48px",
+                "borderRadius": "12px"
+            },
+            "states": {
+                "default": {
+                    "background": "#161B22",
+                    "border": "2px dashed #30363D"
+                },
+                "hover": {
+                    "background": "#1C2128",
+                    "border": "2px dashed #4A90E2",
+                    "boxShadow": "0 0 20px rgba(74, 144, 226, 0.2)"
+                },
+                "dragOver": {
+                    "background": "rgba(74, 144, 226, 0.1)",
+                    "border": "2px dashed #4A90E2",
+                    "boxShadow": "0 0 40px rgba(74, 144, 226, 0.3)"
+                }
+            },
+            "children": {
+                "icon": {
+                    "dimensions": {
+                        "width": "64px",
+                        "height": "64px"
+                    },
+                    "style": {
+                        "color": "#4A90E2",
+                        "marginBottom": "24px"
+                    }
+                },
+                "title": {
+                    "text": "Drag & Drop Legacy Repository",
+                    "style": {
+                        "fontSize": "18px",
+                        "fontWeight": "600",
+                        "color": "#F0F6FC"
+                    }
+                },
+                "subtitle": {
+                    "text": "(ZIP, Folder) or Paste Code Here",
+                    "style": {
+                        "fontSize": "14px",
+                        "color": "#8B949E",
+                        "marginTop": "8px"
+                    }
+                },
+                "supportedFormats": {
+                    "items": [
+                        ".java",
+                        ".php",
+                        ".sql",
+                        ".zip"
+                    ],
+                    "badgeStyle": {
+                        "background": "#21262D",
+                        "padding": "4px 12px",
+                        "borderRadius": "9999px",
+                        "fontSize": "12px",
+                        "color": "#8B949E"
+                    }
+                },
+                "pasteButton": {
+                    "text": "or paste code directly",
+                    "style": {
+                        "marginTop": "24px",
+                        "color": "#4A90E2",
+                        "fontSize": "14px",
+                        "cursor": "pointer"
+                    }
+                }
+            }
+        },
+        "analysisPanel": {
+            "description": "IBM Bob analysis progress panel",
+            "dimensions": {
+                "padding": "24px",
+                "borderRadius": "12px"
+            },
+            "style": {
+                "background": "#161B22",
+                "border": "1px solid #30363D"
+            },
+            "children": {
+                "header": {
+                    "title": "IBM Bob Analyzing...",
+                    "titleStyle": {
+                        "fontSize": "16px",
+                        "fontWeight": "600"
+                    },
+                    "statusBadge": {
+                        "text": "Processing",
+                        "style": {
+                            "background": "rgba(74, 144, 226, 0.2)",
+                            "color": "#4A90E2",
+                            "padding": "4px 12px",
+                            "borderRadius": "9999px",
+                            "fontSize": "12px"
+                        }
+                    }
+                },
+                "codePreview": {
+                    "dimensions": {
+                        "height": "120px",
+                        "marginTop": "16px"
+                    },
+                    "style": {
+                        "background": "#0D1117",
+                        "borderRadius": "8px",
+                        "padding": "16px",
+                        "fontFamily": "Geist Mono",
+                        "fontSize": "12px",
+                        "overflow": "hidden"
+                    },
+                    "scanLine": {
+                        "description": "Animated horizontal line scanning code",
+                        "style": {
+                            "height": "2px",
+                            "background": "linear-gradient(90deg, transparent, #4A90E2, transparent)",
+                            "animation": "scanDown 2s ease-in-out infinite"
+                        }
+                    }
+                },
+                "steps": {
+                    "items": [
+                        {
+                            "label": "Detecting Java patterns",
+                            "status": "completed"
+                        },
+                        {
+                            "label": "Mapping SQL dependencies",
+                            "status": "inProgress"
+                        },
+                        {
+                            "label": "Generating Clean Architecture",
+                            "status": "pending"
+                        },
+                        {
+                            "label": "Creating API contracts",
+                            "status": "pending"
+                        }
+                    ],
+                    "stepStyle": {
+                        "gap": "12px",
+                        "iconSize": "20px",
+                        "fontSize": "14px"
+                    },
+                    "statusIcons": {
+                        "completed": {
+                            "icon": "CheckCircle",
+                            "color": "#3FB950"
+                        },
+                        "inProgress": {
+                            "icon": "Loader (spinning)",
+                            "color": "#4A90E2"
+                        },
+                        "pending": {
+                            "icon": "Circle",
+                            "color": "#6E7681"
+                        }
+                    }
+                },
+                "progressBar": {
+                    "dimensions": {
+                        "height": "8px",
+                        "marginTop": "24px"
+                    },
+                    "style": {
+                        "background": "#21262D",
+                        "borderRadius": "9999px"
+                    },
+                    "fill": {
+                        "background": "linear-gradient(90deg, #4A90E2, #58A6FF)",
+                        "borderRadius": "9999px",
+                        "transition": "width 300ms ease"
+                    }
+                },
+                "estimatedTime": {
+                    "text": "Estimated completion: 3 minutes",
+                    "style": {
+                        "fontSize": "14px",
+                        "color": "#8B949E",
+                        "marginTop": "12px"
+                    }
+                }
+            }
+        },
+        "erDiagram": {
+            "description": "Visual Entity-Relationship diagram",
+            "dimensions": {
+                "minHeight": "300px",
+                "padding": "16px",
+                "borderRadius": "12px"
+            },
+            "style": {
+                "background": "#161B22",
+                "border": "1px solid #30363D"
+            },
+            "children": {
+                "header": {
+                    "title": "Visual ER Diagram",
+                    "expandButton": {
+                        "icon": "Expand",
+                        "size": "16px"
+                    }
+                },
+                "canvas": {
+                    "background": "#0D1117",
+                    "gridPattern": {
+                        "size": "20px",
+                        "color": "rgba(48, 54, 61, 0.5)",
+                        "style": "dots"
+                    }
+                },
+                "entityCard": {
+                    "dimensions": {
+                        "width": "160px",
+                        "padding": "12px",
+                        "borderRadius": "8px"
+                    },
+                    "style": {
+                        "background": "#21262D",
+                        "border": "1px solid #30363D"
+                    },
+                    "header": {
+                        "background": "#4A90E2",
+                        "padding": "8px 12px",
+                        "borderRadius": "6px 6px 0 0",
+                        "fontSize": "12px",
+                        "fontWeight": "600",
+                        "color": "#FFFFFF"
+                    },
+                    "fields": {
+                        "fontSize": "11px",
+                        "fontFamily": "Geist Mono",
+                        "lineHeight": "20px",
+                        "pkIcon": {
+                            "text": "PK",
+                            "color": "#D29922"
+                        },
+                        "fkIcon": {
+                            "text": "FK",
+                            "color": "#58A6FF"
+                        }
+                    }
+                },
+                "connectionLine": {
+                    "stroke": "#4A90E2",
+                    "strokeWidth": "2px",
+                    "style": "curved",
+                    "endMarker": "arrow or crow's foot"
+                }
+            }
+        },
+        "folderScaffolding": {
+            "description": "Clean Architecture folder tree",
+            "dimensions": {
+                "padding": "16px",
+                "borderRadius": "12px"
+            },
+            "style": {
+                "background": "#161B22",
+                "border": "1px solid #30363D"
+            },
+            "children": {
+                "header": {
+                    "title": "Folder Scaffolding",
+                    "collapseIcon": "ChevronDown"
+                },
+                "tree": {
+                    "indentSize": "20px",
+                    "lineHeight": "28px",
+                    "fontSize": "13px",
+                    "fontFamily": "Geist Mono"
+                },
+                "folderItem": {
+                    "icon": {
+                        "name": "Folder",
+                        "color": "#4A90E2",
+                        "size": "16px"
+                    },
+                    "expandedIcon": {
+                        "name": "FolderOpen",
+                        "color": "#4A90E2"
+                    },
+                    "textColor": "#F0F6FC"
+                },
+                "fileItem": {
+                    "icon": {
+                        "name": "File",
+                        "color": "#8B949E",
+                        "size": "16px"
+                    },
+                    "textColor": "#8B949E"
+                },
+                "structure": [
+                    {
+                        "name": "Clean Architecture",
+                        "type": "folder",
+                        "expanded": true
+                    },
+                    {
+                        "name": "src",
+                        "type": "folder",
+                        "expanded": true,
+                        "indent": 1
+                    },
+                    {
+                        "name": "controllers",
+                        "type": "folder",
+                        "indent": 2
+                    },
+                    {
+                        "name": "services",
+                        "type": "folder",
+                        "indent": 2
+                    },
+                    {
+                        "name": "repositories",
+                        "type": "folder",
+                        "indent": 2
+                    },
+                    {
+                        "name": "entities",
+                        "type": "folder",
+                        "indent": 2
+                    },
+                    {
+                        "name": "dto",
+                        "type": "folder",
+                        "indent": 2
+                    },
+                    {
+                        "name": "index.ts",
+                        "type": "file",
+                        "indent": 2
+                    },
+                    {
+                        "name": "models",
+                        "type": "folder",
+                        "indent": 1
+                    }
+                ]
+            }
+        },
+        "databaseSchema": {
+            "description": "SQL schema code block",
+            "dimensions": {
+                "maxHeight": "200px",
+                "padding": "16px",
+                "borderRadius": "12px"
+            },
+            "style": {
+                "background": "#161B22",
+                "border": "1px solid #30363D"
+            },
+            "children": {
+                "header": {
+                    "title": "Database Schema (SQL)",
+                    "copyButton": {
+                        "icon": "Copy",
+                        "size": "16px"
+                    }
+                },
+                "codeBlock": {
+                    "background": "#0D1117",
+                    "padding": "16px",
+                    "borderRadius": "8px",
+                    "fontFamily": "Geist Mono",
+                    "fontSize": "12px",
+                    "lineHeight": "20px",
+                    "overflow": "auto"
+                }
+            }
+        },
+        "codeViewer": {
+            "description": "Before/After split code comparison",
+            "dimensions": {
+                "minHeight": "300px",
+                "padding": "16px",
+                "borderRadius": "12px"
+            },
+            "style": {
+                "background": "#161B22",
+                "border": "1px solid #30363D"
+            },
+            "children": {
+                "header": {
+                    "title": "Before and After Code Viewer",
+                    "expandButton": {
+                        "icon": "Expand",
+                        "size": "16px"
+                    }
+                },
+                "splitView": {
+                    "layout": "horizontal 50/50",
+                    "divider": {
+                        "width": "1px",
+                        "color": "#30363D"
+                    }
+                },
+                "leftPane": {
+                    "label": "Legacy (PHP)",
+                    "labelStyle": {
+                        "background": "rgba(248, 81, 73, 0.2)",
+                        "color": "#F85149",
+                        "padding": "4px 8px",
+                        "borderRadius": "4px",
+                        "fontSize": "11px"
+                    },
+                    "codeStyle": {
+                        "background": "#0D1117"
+                    },
+                    "highlightedLines": {
+                        "description": "Lines with vulnerabilities/issues",
+                        "style": {
+                            "background": "rgba(248, 81, 73, 0.15)",
+                            "borderLeft": "3px solid #F85149"
+                        }
+                    }
+                },
+                "rightPane": {
+                    "label": "Modern (TypeScript)",
+                    "labelStyle": {
+                        "background": "rgba(63, 185, 80, 0.2)",
+                        "color": "#3FB950",
+                        "padding": "4px 8px",
+                        "borderRadius": "4px",
+                        "fontSize": "11px"
+                    },
+                    "codeStyle": {
+                        "background": "#0D1117"
+                    }
+                },
+                "lineNumbers": {
+                    "width": "40px",
+                    "color": "#6E7681",
+                    "fontSize": "12px",
+                    "textAlign": "right",
+                    "paddingRight": "12px",
+                    "borderRight": "1px solid #21262D"
+                }
+            }
+        },
+        "apiContract": {
+            "description": "REST API endpoints table",
+            "dimensions": {
+                "padding": "16px",
+                "borderRadius": "12px"
+            },
+            "style": {
+                "background": "#161B22",
+                "border": "1px solid #30363D"
+            },
+            "children": {
+                "header": {
+                    "title": "API Contract",
+                    "exportButton": {
+                        "text": "Export OpenAPI",
+                        "icon": "Download"
+                    }
+                },
+                "table": {
+                    "columns": [
+                        {
+                            "name": "Endpoint",
+                            "width": "40%"
+                        },
+                        {
+                            "name": "Method",
+                            "width": "15%"
+                        },
+                        {
+                            "name": "Description",
+                            "width": "45%"
+                        }
+                    ],
+                    "headerStyle": {
+                        "background": "#21262D",
+                        "padding": "12px 16px",
+                        "fontSize": "12px",
+                        "fontWeight": "600",
+                        "color": "#8B949E",
+                        "textTransform": "uppercase"
+                    },
+                    "rowStyle": {
+                        "padding": "12px 16px",
+                        "fontSize": "13px",
+                        "borderBottom": "1px solid #21262D"
+                    },
+                    "rowHover": {
+                        "background": "#1C2128"
+                    }
+                },
+                "methodBadge": {
+                    "padding": "4px 8px",
+                    "borderRadius": "4px",
+                    "fontSize": "11px",
+                    "fontWeight": "600",
+                    "fontFamily": "Geist Mono",
+                    "variants": {
+                        "GET": {
+                            "background": "rgba(63, 185, 80, 0.2)",
+                            "color": "#3FB950"
+                        },
+                        "POST": {
+                            "background": "rgba(88, 166, 255, 0.2)",
+                            "color": "#58A6FF"
+                        },
+                        "PUT": {
+                            "background": "rgba(210, 153, 34, 0.2)",
+                            "color": "#D29922"
+                        },
+                        "DELETE": {
+                            "background": "rgba(248, 81, 73, 0.2)",
+                            "color": "#F85149"
+                        }
+                    }
+                }
+            }
+        },
+        "exportButton": {
+            "description": "Primary export ZIP button",
+            "dimensions": {
+                "padding": "12px 24px",
+                "borderRadius": "8px"
+            },
+            "style": {
+                "background": "#4A90E2",
+                "color": "#FFFFFF",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "boxShadow": "0 0 20px rgba(74, 144, 226, 0.3)"
+            },
+            "hover": {
+                "background": "#3A7BC8",
+                "boxShadow": "0 0 30px rgba(74, 144, 226, 0.4)"
+            },
+            "icon": {
+                "name": "Download",
+                "size": "16px",
+                "position": "right",
+                "marginLeft": "8px"
+            }
+        }
+    },
+    "animations": {
+        "scanLine": {
+            "description": "Scanning animation for code analysis",
+            "keyframes": {
+                "0%": {
+                    "top": "0%",
+                    "opacity": "0"
+                },
+                "10%": {
+                    "opacity": "1"
+                },
+                "90%": {
+                    "opacity": "1"
+                },
+                "100%": {
+                    "top": "100%",
+                    "opacity": "0"
+                }
+            },
+            "duration": "2s",
+            "timing": "ease-in-out",
+            "iteration": "infinite"
+        },
+        "pulse": {
+            "description": "Pulsing glow effect",
+            "keyframes": {
+                "0%, 100%": {
+                    "opacity": "1"
+                },
+                "50%": {
+                    "opacity": "0.5"
+                }
+            },
+            "duration": "2s",
+            "timing": "ease-in-out",
+            "iteration": "infinite"
+        },
+        "spin": {
+            "description": "Loading spinner rotation",
+            "keyframes": {
+                "from": {
+                    "transform": "rotate(0deg)"
+                },
+                "to": {
+                    "transform": "rotate(360deg)"
+                }
+            },
+            "duration": "1s",
+            "timing": "linear",
+            "iteration": "infinite"
+        },
+        "fadeIn": {
+            "keyframes": {
+                "from": {
+                    "opacity": "0",
+                    "transform": "translateY(10px)"
+                },
+                "to": {
+                    "opacity": "1",
+                    "transform": "translateY(0)"
+                }
+            },
+            "duration": "300ms",
+            "timing": "ease-out"
+        }
+    },
+    "figmaImportNotes": {
+        "plugins": [
+            "Tokens Studio for Figma - Import design-tokens.json directly",
+            "Figma Tokens - Alternative token import",
+            "HTML to Figma - Import from deployed preview URL",
+            "Anima - Sync from code to Figma"
+        ],
+        "setup": [
+            "1. Create a new Figma file",
+            "2. Set up color styles using the colors object",
+            "3. Set up text styles using typography object",
+            "4. Create components following the component specs",
+            "5. Use Auto Layout for all containers",
+            "6. Set up variants for component states"
+        ],
+        "autoLayoutSettings": {
+            "cards": {
+                "direction": "vertical",
+                "padding": "16-24px",
+                "gap": "16px"
+            },
+            "header": {
+                "direction": "horizontal",
+                "padding": "16px 24px",
+                "gap": "32px"
+            },
+            "buttons": {
+                "direction": "horizontal",
+                "padding": "12px 24px",
+                "gap": "8px"
+            }
+        }
+    }
+}
