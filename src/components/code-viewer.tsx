@@ -3,8 +3,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Maximize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { type BobBlueprint } from "@/lib"
 
-const beforeCode = `<?php
+interface CodeViewerProps {
+  blueprint: BobBlueprint | null
+}
+
+const fallbackBeforeCode = `<?php
 // Legacy PHP code - OrderController.php
 class OrderController {
   
@@ -39,7 +44,7 @@ class OrderController {
   }
 }`
 
-const afterCode = `// Modern TypeScript - OrderService.ts
+const fallbackAfterCode = `// Modern TypeScript - OrderService.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@typeorm/core';
 import { Repository } from 'typeorm';
@@ -72,7 +77,12 @@ export class OrderService {
   }
 }`
 
-export function CodeViewer() {
+export function CodeViewer({ blueprint }: CodeViewerProps) {
+    // For now, we'll use the fallback code since we don't have original code in the blueprint
+    // In a real implementation, you might want to store the original code and generate modernized code
+    const beforeCode = fallbackBeforeCode
+    const afterCode = fallbackAfterCode
+
     return (
         <Card className="bg-card border-border">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">

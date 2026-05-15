@@ -1,9 +1,16 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Maximize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { generateMermaidERDiagram, type BobBlueprint } from "@/lib"
 
+interface ERDiagramProps {
+  blueprint: BobBlueprint | null
+}
+
+// Fallback static entities for when no blueprint is available
 interface Entity {
     id: string
     name: string
@@ -18,7 +25,7 @@ interface Relation {
     type: "one-to-many" | "many-to-many" | "one-to-one"
 }
 
-const entities: Entity[] = [
+const fallbackEntities: Entity[] = [
     {
         id: "users",
         name: "Users",
@@ -72,21 +79,85 @@ const relations: Relation[] = [
     { from: "products", to: "order_items", type: "one-to-many" },
 ]
 
-export function ERDiagram() {
-    return (
-        <Card className="bg-card border-border h-full">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium text-foreground">
-                    Visual ER Diagram
-                </CardTitle>
+export function ERDiagram({ blueprint }: ERDiagramProps) {
+    const [svgContent, setSvgContent] = useState<string>('')
+    const [isRendering, setIsRendering] = useState(false)
 
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <Maximize2 className="h-4 w-4" />
-                </Button>
-            </CardHeader>
+    useEffect(() => {
+        if (!blueprint) {
+            setSvgContent('')
+            return
+        }
 
-            <CardContent>
-                <div className="relative bg-secondary/30 rounded-lg p-4 min-h-[300px] overflow-hidden">
+        let isMounted = true
+        setIsRendering(true)
+
+        // Dynamically import mermaid only on client side
+        import('mermaid').then(async (mermaidModule) => {
+            const mermaid = mermaidModule.default
+            
+            // Initialize mermaid with dark theme
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#3b82f6',
+                    primaryTextColor: '#fff',
+                    primaryBorderColor: '#1e40af',
+                    lineColor: '#64748b',
+                    secondaryColor: '#1e293b',
+                    tertiaryColor: '#334155',
+                }
+            })
+            
+            try {
+                const mermaidCode = generateMermaidERDiagram(blueprint)
+                
+                // Generate unique ID for this render
+                const id = `mermaid-${Date.now()}`
+                
+                // Use mermaid.render to generate SVG string
+                const { svg } = await mermaid.render(id, mermaidCode)
+                
+                if (isMounted) {
+                    setSvgContent(svg)
+                    setIsRendering(false)
+                }
+            } catch (error) {
+                console.error('Error rendering Mermaid diagram:', error)
+                if (isMounted) {
+                    setSvgContent('')
+                    setIsRendering(false)
+                }
+            }
+        }).catch((error) => {
+            console.error('Error loading Mermaid:', error)
+            if (isMounted) {
+                setIsRendering(false)
+            }
+        })
+
+        return () => {
+            isMounted = false
+        }
+    }, [blueprint])
+
+    // If no blueprint, show fallback static diagram
+    if (!blueprint) {
+        return (
+            <Card className="bg-card border-border h-full">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                    <CardTitle className="text-sm font-medium text-foreground">
+                        Visual ER Diagram
+                    </CardTitle>
+
+                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <Maximize2 className="h-4 w-4" />
+                    </Button>
+                </CardHeader>
+
+                <CardContent>
+                    <div className="relative bg-secondary/30 rounded-lg p-4 min-h-[300px] overflow-hidden">
                     {/* Grid background */}
                     <div
                         className="absolute inset-0 opacity-10"
@@ -150,9 +221,9 @@ export function ERDiagram() {
                         />
                     </svg>
 
-                    {/* Entity boxes */}
-                    <div className="relative grid grid-cols-2 gap-4">
-                        {entities.map((entity) => (
+                        {/* Entity boxes */}
+                        <div className="relative grid grid-cols-2 gap-4">
+                            {fallbackEntities.map((entity) => (
                             <div
                                 key={entity.id}
                                 className="bg-card border border-border rounded-md overflow-hidden shadow-lg shadow-black/20"
@@ -186,8 +257,43 @@ export function ERDiagram() {
                                     ))}
                                 </div>
                             </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    // Show Mermaid diagram when blueprint is available
+    return (
+        <Card className="bg-card border-border h-full">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-medium text-foreground">
+                    Visual ER Diagram
+                </CardTitle>
+
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <Maximize2 className="h-4 w-4" />
+                </Button>
+            </CardHeader>
+
+            <CardContent>
+                <div className="bg-secondary/30 rounded-lg p-4 min-h-[300px] overflow-auto">
+                    {isRendering ? (
+                        <div className="flex items-center justify-center h-[280px]">
+                            <div className="text-muted-foreground text-sm">Rendering diagram...</div>
+                        </div>
+                    ) : svgContent ? (
+                        <div
+                            className="flex items-center justify-center"
+                            dangerouslySetInnerHTML={{ __html: svgContent }}
+                        />
+                    ) : (
+                        <div className="flex items-center justify-center h-[280px]">
+                            <div className="text-muted-foreground text-sm">No diagram available</div>
+                        </div>
+                    )}
                 </div>
             </CardContent>
         </Card>

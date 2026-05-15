@@ -11,22 +11,64 @@ import { DatabaseSchema } from "@/components/database-schema"
 import { ApiContract } from "@/components/api-contract"
 import { Button } from "@/components/ui/button"
 import { Download, ArrowRight, Sparkles } from "lucide-react"
+import { downloadZip, adaptJsonToFolderNodes, type BobBlueprint } from "@/lib"
 
 export default function BlueprintAI() {
   const [currentView, setCurrentView] = useState<"analyze" | "blueprint">("analyze")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
+  const [blueprintData, setBlueprintData] = useState<BobBlueprint | null>(null)
 
-  const handleUpload = (files: FileList) => {
+  const handleUpload = async (files: FileList) => {
     console.log("Files uploaded:", files)
     setIsAnalyzing(true)
     setAnalysisComplete(false)
+    
+    // Read the first file
+    const file = files[0]
+    const code = await file.text()
+    await analyzeCode(code)
   }
 
-  const handleCodePaste = (code: string) => {
+  const handleCodePaste = async (code: string) => {
     console.log("Code pasted:", code.substring(0, 100))
     setIsAnalyzing(true)
     setAnalysisComplete(false)
+    await analyzeCode(code)
+  }
+
+  const analyzeCode = async (code: string) => {
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Analysis failed')
+      }
+
+      const data: BobBlueprint = await response.json()
+      setBlueprintData(data)
+      setAnalysisComplete(true)
+    } catch (error) {
+      console.error('Error analyzing code:', error)
+      setIsAnalyzing(false)
+    }
+  }
+
+  const handleExportZip = async () => {
+    if (!blueprintData) return
+
+    try {
+      const files = adaptJsonToFolderNodes(blueprintData.suggested_folder_structure)
+      await downloadZip(files, 'modernized-scaffolding.zip')
+    } catch (error) {
+      console.error('Error exporting ZIP:', error)
+    }
   }
 
   const handleAnalysisComplete = () => {
@@ -103,7 +145,11 @@ export default function BlueprintAI() {
                 <Sparkles className="h-5 w-5 text-primary" />
               </div>
 
-              <Button className="gap-2 bg-primary hover:bg-primary/90">
+              <Button
+                className="gap-2 bg-primary hover:bg-primary/90"
+                onClick={handleExportZip}
+                disabled={!blueprintData}
+              >
                 <Download className="h-4 w-4" />
                 Export Modernized Scaffolding ZIP
               </Button>
@@ -113,27 +159,27 @@ export default function BlueprintAI() {
             <div className="grid grid-cols-12 gap-4">
               {/* Left Column - ER Diagram */}
               <div className="col-span-12 lg:col-span-5">
-                <ERDiagram />
+                <ERDiagram blueprint={blueprintData} />
               </div>
 
               {/* Middle Column - Folder Scaffolding */}
               <div className="col-span-12 lg:col-span-4">
-                <FolderScaffolding />
+                <FolderScaffolding blueprint={blueprintData} />
               </div>
 
               {/* Right Column - Database Schema */}
               <div className="col-span-12 lg:col-span-3">
-                <DatabaseSchema />
+                <DatabaseSchema blueprint={blueprintData} />
               </div>
 
               {/* Bottom Left - Code Viewer */}
               <div className="col-span-12 lg:col-span-8">
-                <CodeViewer />
+                <CodeViewer blueprint={blueprintData} />
               </div>
 
               {/* Bottom Right - API Contract */}
               <div className="col-span-12 lg:col-span-4">
-                <ApiContract />
+                <ApiContract blueprint={blueprintData} />
               </div>
             </div>
           </div>
