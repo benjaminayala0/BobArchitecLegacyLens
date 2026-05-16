@@ -348,23 +348,23 @@ export class ${serviceName} {
             </div>
 
             <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-12 lg:col-span-5 h-[400px]">
+              <div className="col-span-12 lg:col-span-5 h-[400px] overflow-y-auto">
                 <ERDiagram blueprint={blueprintData} />
               </div>
 
-              <div className="col-span-12 lg:col-span-4 h-[400px]">
+              <div className="col-span-12 lg:col-span-4 h-[400px] overflow-y-auto">
                 <FolderScaffolding blueprint={blueprintData} />
               </div>
 
-              <div className="col-span-12 lg:col-span-3 h-[400px]">
+              <div className="col-span-12 lg:col-span-3 h-[400px] overflow-y-auto">
                 <DatabaseSchema blueprint={blueprintData} />
               </div>
 
-              <div className="col-span-12 lg:col-span-8 h-[400px]">
+              <div className="col-span-12 lg:col-span-8 h-[400px] overflow-y-auto">
                 <CodeViewer blueprint={blueprintData} />
               </div>
 
-              <div className="col-span-12 lg:col-span-4 h-[400px]">
+              <div className="col-span-12 lg:col-span-4 h-[400px] overflow-y-auto">
                 <ApiContract blueprint={blueprintData} />
               </div>
             </div>

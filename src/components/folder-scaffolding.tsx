@@ -224,55 +224,60 @@ export function FolderScaffolding({ blueprint }: FolderScaffoldingProps) {
         if (!blueprint) return "// File content will be generated based on your blueprint"
 
         const ext = fileName.split('.').pop()?.toLowerCase()
+        const baseName = fileName.replace(/\.(ts|js|tsx|jsx)$/, '')
         
-        // Generate entity files
-        if (fileName.includes('Entity') || fileName.includes('entity')) {
-            const entityName = fileName.replace(/\.(ts|js)$/, '').replace(/Entity|entity/, '')
-            const entity = blueprint.entities.find(e => e.name.toLowerCase() === entityName.toLowerCase())
-            
-            if (entity) {
-                return `import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+        // Try to match entity by name (handles "Student.ts", "StudentEntity.ts", "student.entity.ts" etc.)
+        const cleanName = baseName.replace(/Entity|entity|\.entity/gi, '').replace(/Model|model|\.model/gi, '')
+        const matchedEntity = blueprint.entities.find(e => 
+            e.name.toLowerCase() === cleanName.toLowerCase() ||
+            e.name.toLowerCase() === baseName.toLowerCase()
+        )
+        
+        // Generate entity/model files
+        if (matchedEntity && (ext === 'ts' || ext === 'js') && !fileName.includes('Service') && !fileName.includes('Controller') && !fileName.includes('Repository') && !fileName.includes('Route') && !fileName.includes('Test') && !fileName.includes('test') && !fileName.includes('spec')) {
+            return `import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('${entity.table}')
-export class ${entity.name} {
-${entity.fields.map(f => `  @${f.primary_key ? 'PrimaryGeneratedColumn' : 'Column'}()
+@Entity('${matchedEntity.table}')
+export class ${matchedEntity.name} {
+${matchedEntity.fields.map(f => `  @${f.primary_key ? 'PrimaryGeneratedColumn' : 'Column'}()
   ${f.name}: ${f.type === 'integer' ? 'number' : f.type === 'boolean' ? 'boolean' : 'string'};`).join('\n\n')}
 }
 `
-            }
         }
         
         // Generate service files
-        if (fileName.includes('Service')) {
-            const serviceName = fileName.replace(/\.(ts|js)$/, '')
-            const entityName = serviceName.replace('Service', '')
+        if (fileName.includes('Service') || fileName.includes('service')) {
+            const serviceName = baseName
+            const entityName = serviceName.replace(/Service|service/gi, '')
+            const entity = blueprint.entities.find(e => e.name.toLowerCase() === entityName.toLowerCase())
+            const resolvedName = entity ? entity.name : entityName
             
             return `import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ${entityName} } from './entities/${entityName.toLowerCase()}.entity';
+import { ${resolvedName} } from './entities/${resolvedName.toLowerCase()}.entity';
 
 @Injectable()
 export class ${serviceName} {
   constructor(
-    @InjectRepository(${entityName})
-    private repository: Repository<${entityName}>,
+    @InjectRepository(${resolvedName})
+    private repository: Repository<${resolvedName}>,
   ) {}
 
-  async findAll(): Promise<${entityName}[]> {
+  async findAll(): Promise<${resolvedName}[]> {
     return this.repository.find();
   }
 
-  async findOne(id: string): Promise<${entityName}> {
+  async findOne(id: string): Promise<${resolvedName}> {
     return this.repository.findOne({ where: { id } });
   }
 
-  async create(data: Partial<${entityName}>): Promise<${entityName}> {
+  async create(data: Partial<${resolvedName}>): Promise<${resolvedName}> {
     const entity = this.repository.create(data);
     return this.repository.save(entity);
   }
 
-  async update(id: string, data: Partial<${entityName}>): Promise<${entityName}> {
+  async update(id: string, data: Partial<${resolvedName}>): Promise<${resolvedName}> {
     await this.repository.update(id, data);
     return this.findOne(id);
   }
@@ -280,6 +285,60 @@ export class ${serviceName} {
   async remove(id: string): Promise<void> {
     await this.repository.delete(id);
   }
+}
+`
+        }
+
+        // Generate controller files
+        if (fileName.includes('Controller') || fileName.includes('controller')) {
+            const controllerName = baseName
+            const entityName = controllerName.replace(/Controller|controller/gi, '')
+            const entity = blueprint.entities.find(e => e.name.toLowerCase() === entityName.toLowerCase())
+            const resolvedName = entity ? entity.name : entityName
+
+            return `import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { ${resolvedName}Service } from './${resolvedName.toLowerCase()}.service';
+
+@Controller('${resolvedName.toLowerCase()}s')
+export class ${controllerName} {
+  constructor(private readonly ${resolvedName.toLowerCase()}Service: ${resolvedName}Service) {}
+
+  @Get()
+  findAll() {
+    return this.${resolvedName.toLowerCase()}Service.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.${resolvedName.toLowerCase()}Service.findOne(id);
+  }
+
+  @Post()
+  create(@Body() data: Partial<any>) {
+    return this.${resolvedName.toLowerCase()}Service.create(data);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.${resolvedName.toLowerCase()}Service.remove(id);
+  }
+}
+`
+        }
+
+        // Generate repository files
+        if (fileName.includes('Repository') || fileName.includes('repository')) {
+            const repoName = baseName
+            const entityName = repoName.replace(/Repository|repository/gi, '')
+            const entity = blueprint.entities.find(e => e.name.toLowerCase() === entityName.toLowerCase())
+            const resolvedName = entity ? entity.name : entityName
+
+            return `import { EntityRepository, Repository } from 'typeorm';
+import { ${resolvedName} } from './entities/${resolvedName.toLowerCase()}.entity';
+
+@EntityRepository(${resolvedName})
+export class ${repoName} extends Repository<${resolvedName}> {
+  // Custom query methods can be added here
 }
 `
         }

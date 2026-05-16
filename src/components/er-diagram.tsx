@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Maximize2 } from "lucide-react"
+import { Maximize2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { generateMermaidERDiagram, type BobBlueprint } from "@/lib"
 
@@ -81,6 +81,7 @@ const relations: Relation[] = [
 export function ERDiagram({ blueprint }: ERDiagramProps) {
     const [svgContent, setSvgContent] = useState<string>('')
     const [isRendering, setIsRendering] = useState(false)
+    const [isExpanded, setIsExpanded] = useState(false)
 
     useEffect(() => {
         if (!blueprint) {
@@ -150,7 +151,7 @@ export function ERDiagram({ blueprint }: ERDiagramProps) {
                         Visual ER Diagram
                     </CardTitle>
 
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsExpanded(true)}>
                         <Maximize2 className="h-4 w-4" />
                     </Button>
                 </CardHeader>
@@ -265,35 +266,72 @@ export function ERDiagram({ blueprint }: ERDiagramProps) {
     }
 
     return (
-        <Card className="bg-card border-border h-full">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium text-foreground">
-                    Visual ER Diagram
-                </CardTitle>
+        <>
+            <Card className="bg-card border-border h-full">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                    <CardTitle className="text-sm font-medium text-foreground">
+                        Visual ER Diagram
+                    </CardTitle>
 
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <Maximize2 className="h-4 w-4" />
-                </Button>
-            </CardHeader>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsExpanded(true)}>
+                        <Maximize2 className="h-4 w-4" />
+                    </Button>
+                </CardHeader>
 
-            <CardContent>
-                <div className="bg-secondary/30 rounded-lg p-4 min-h-[300px] overflow-auto">
-                    {isRendering ? (
-                        <div className="flex items-center justify-center h-[280px]">
-                            <div className="text-muted-foreground text-sm">Rendering diagram...</div>
+                <CardContent>
+                    {/* Preview: scale down to fit, click to expand */}
+                    <div className="bg-secondary/30 rounded-lg p-2 h-[320px] overflow-hidden relative cursor-pointer" onClick={() => setIsExpanded(true)}>
+                        {isRendering ? (
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-muted-foreground text-sm">Rendering diagram...</div>
+                            </div>
+                        ) : svgContent ? (
+                            <div
+                                className="w-full h-full flex items-center justify-center [&>svg]:max-w-full [&>svg]:max-h-full [&>svg]:w-auto [&>svg]:h-auto"
+                                dangerouslySetInnerHTML={{ __html: svgContent }}
+                            />
+                        ) : (
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-muted-foreground text-sm">No diagram available</div>
+                            </div>
+                        )}
+                        {svgContent && (
+                            <div className="absolute bottom-2 right-2 text-[10px] text-muted-foreground/60 bg-background/80 px-2 py-0.5 rounded">
+                                Click to expand
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {isExpanded && (
+                <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm p-8">
+                    <div className="h-full flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-2xl font-semibold text-foreground">Visual ER Diagram</h2>
+                            <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)}>
+                                <X className="h-6 w-6" />
+                            </Button>
                         </div>
-                    ) : svgContent ? (
-                        <div
-                            className="flex items-center justify-center"
-                            dangerouslySetInnerHTML={{ __html: svgContent }}
-                        />
-                    ) : (
-                        <div className="flex items-center justify-center h-[280px]">
-                            <div className="text-muted-foreground text-sm">No diagram available</div>
+                        <div className="flex-1 bg-secondary/30 rounded-lg p-8 overflow-auto">
+                            {isRendering ? (
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="text-muted-foreground text-lg">Rendering diagram...</div>
+                                </div>
+                            ) : svgContent ? (
+                                <div
+                                    className="flex items-center justify-center min-h-full"
+                                    dangerouslySetInnerHTML={{ __html: svgContent }}
+                                />
+                            ) : (
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="text-muted-foreground text-lg">No diagram available</div>
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
+            )}
+        </>
     )
 }

@@ -1,7 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Maximize2 } from "lucide-react"
+import { Maximize2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { type BobBlueprint } from "@/lib"
 
@@ -44,184 +45,113 @@ class OrderController {
   }
 }`
 
-const fallbackAfterCode = `// Modern TypeScript - OrderService.ts
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@typeorm/core';
-import { Repository } from 'typeorm';
-import { Order } from './entities/order.entity';
-import { CreateOrderDto } from './dto/create-order.dto';
-
-@Injectable()
-export class OrderService {
-  constructor(
-    @InjectRepository(Order)
-    private orderRepository: Repository<Order>,
-  ) {}
-
-  async findByUserId(userId: string): Promise<Order[]> {
-    return this.orderRepository.find({
-      where: { userId },
-      relations: ['items', 'customer'],
-    });
-  }
-
-  async create(createOrderDto: CreateOrderDto): Promise<Order> {
-    const order = this.orderRepository.create(createOrderDto);
-    return this.orderRepository.save(order);
-  }
-
-  async findOne(id: string): Promise<Order | null> {
-    return this.orderRepository.findOne({
-      where: { id },
-    });
-  }
-}`
-
 export function CodeViewer({ blueprint }: CodeViewerProps) {
-    // Use the original code from blueprint if available, otherwise use fallback
+    const [isExpanded, setIsExpanded] = useState(false)
+
     const beforeCode = blueprint?.original_code || fallbackBeforeCode
-    
-    // Generate modernized code based on the first entity if available
-    const generateModernCode = (): string => {
-        if (!blueprint || !blueprint.entities || blueprint.entities.length === 0) {
-            return fallbackAfterCode
-        }
 
-        const firstEntity = blueprint.entities[0]
-        const entityName = firstEntity.name
-        const tableName = firstEntity.table
-
-        return `// Modern TypeScript - ${entityName}Service.ts
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { ${entityName} } from './entities/${entityName.toLowerCase()}.entity';
-import { Create${entityName}Dto } from './dto/create-${entityName.toLowerCase()}.dto';
-
-@Injectable()
-export class ${entityName}Service {
-  constructor(
-    @InjectRepository(${entityName})
-    private ${entityName.toLowerCase()}Repository: Repository<${entityName}>,
-  ) {}
-
-  async findAll(): Promise<${entityName}[]> {
-    return this.${entityName.toLowerCase()}Repository.find({
-      relations: ['${blueprint.relationships.filter(r => r.from === entityName).map(r => r.to.toLowerCase()).join("', '")}'],
-    });
-  }
-
-  async create(create${entityName}Dto: Create${entityName}Dto): Promise<${entityName}> {
-    const ${entityName.toLowerCase()} = this.${entityName.toLowerCase()}Repository.create(create${entityName}Dto);
-    return this.${entityName.toLowerCase()}Repository.save(${entityName.toLowerCase()});
-  }
-
-  async findOne(id: string): Promise<${entityName} | null> {
-    return this.${entityName.toLowerCase()}Repository.findOne({
-      where: { id },
-    });
-  }
-
-  async update(id: string, update${entityName}Dto: Partial<Create${entityName}Dto>): Promise<${entityName}> {
-    await this.${entityName.toLowerCase()}Repository.update(id, update${entityName}Dto);
-    return this.findOne(id);
-  }
-
-  async remove(id: string): Promise<void> {
-    await this.${entityName.toLowerCase()}Repository.delete(id);
-  }
-}`
+    const detectLanguage = (code: string): string => {
+        if (code.includes('import sqlite3') || code.includes('def ') || code.includes('cursor.execute')) return 'Python'
+        if (code.includes('<?php') || code.includes('mysql_')) return 'PHP'
+        if (code.includes('public class') || code.includes('System.out')) return 'Java'
+        if (code.includes('IDENTIFICATION DIVISION') || code.includes('PERFORM')) return 'COBOL'
+        return 'Legacy Code'
     }
 
-    const afterCode = generateModernCode()
+    const detectedLang = detectLanguage(beforeCode)
+    const beforeLines = beforeCode.split("\n")
+
+    const renderCodeSide = (
+        lines: string[],
+        textSize: string = "text-xs",
+        lineSpacing: string = "leading-5"
+    ) => {
+        const gutterBg = 'bg-destructive/5'
+
+        return (
+            <div className={`flex ${textSize} overflow-auto flex-1`}>
+                <div className={`flex flex-col ${gutterBg} text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none sticky left-0 shrink-0`}>
+                    {lines.map((_, i) => (
+                        <span key={i} className={`${lineSpacing} text-right min-w-[2.5rem]`}>
+                            {i + 1}
+                        </span>
+                    ))}
+                </div>
+
+                <pre className="py-2 px-3 overflow-x-auto flex-1">
+                    <code className={`${textSize} ${lineSpacing} font-mono whitespace-pre`}>
+                        {lines.map((line, i) => (
+                            <div
+                                key={i}
+                                className={`${lineSpacing} ${
+                                    line.includes("mysql_") || line.includes("password") || line.includes("cursor.execute") || line.includes("f\"")
+                                        ? "bg-destructive/20 text-destructive -mx-3 px-3"
+                                        : "text-muted-foreground"
+                                }`}
+                            >
+                                {line || " "}
+                            </div>
+                        ))}
+                    </code>
+                </pre>
+            </div>
+        )
+    }
 
     return (
-        <Card className="bg-card border-border">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium text-foreground">
-                    Before and After Code Viewer
-                </CardTitle>
+        <>
+            <Card className="bg-card border-border">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                    <CardTitle className="text-sm font-medium text-foreground">
+                        Original Legacy Code
+                    </CardTitle>
 
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <Maximize2 className="h-4 w-4" />
-                </Button>
-            </CardHeader>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsExpanded(true)}>
+                        <Maximize2 className="h-4 w-4" />
+                    </Button>
+                </CardHeader>
 
-            <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                    {/* Before Code - Legacy */}
-                    <div className="rounded-lg overflow-hidden border border-destructive/30">
-                        <div className="bg-destructive/10 px-3 py-1.5 border-b border-destructive/30">
-                            <span className="text-xs font-medium text-destructive">Legacy Code</span>
-                        </div>
-
-                        <div className="bg-secondary/30 overflow-hidden">
-                            <div className="flex text-xs h-[280px] overflow-auto">
-                                <div className="flex flex-col bg-destructive/5 text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none sticky left-0">
-                                    {beforeCode.split("\n").map((_, i) => (
-                                        <span key={i} className="leading-5 text-right min-w-[2rem]">
-                                            {i + 1}
-                                        </span>
-                                    ))}
-                                </div>
-
-                                <pre className="py-2 px-3 text-muted-foreground overflow-x-auto flex-1">
-                                    <code className="text-xs leading-5 font-mono whitespace-pre">
-                                        {beforeCode.split("\n").map((line, i) => (
-                                            <div
-                                                key={i}
-                                                className={`leading-5 ${line.includes("mysql_") || line.includes("password") || line.includes("cursor.execute") || line.includes("f\"")
-                                                    ? "bg-destructive/20 text-destructive -mx-3 px-3"
-                                                    : ""
-                                                    }`}
-                                            >
-                                                {line || " "}
-                                            </div>
-                                        ))}
-                                    </code>
-                                </pre>
-                            </div>
+                <CardContent>
+                    <div className="flex items-center gap-3 px-4 py-2 border border-border rounded-t-lg bg-primary/5 border-b-0 shrink-0 flex-wrap">
+                        <span className="text-xs font-medium text-muted-foreground mr-1">Detected Source:</span>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-orange-500/15 text-orange-400 text-xs font-semibold">
+                            {detectedLang}
+                        </span>
+                    </div>
+                    
+                    <div className="border border-border rounded-b-lg overflow-hidden flex flex-col">
+                        <div className="bg-secondary/30 h-[280px] flex flex-col overflow-hidden">
+                            {renderCodeSide(beforeLines)}
                         </div>
                     </div>
+                </CardContent>
+            </Card>
 
-                    {/* After Code - Modern */}
-                    <div className="rounded-lg overflow-hidden border border-primary/30">
-                        <div className="bg-primary/10 px-3 py-1.5 border-b border-primary/30">
-                            <span className="text-xs font-medium text-primary">Modernized Code</span>
+            {isExpanded && (
+                <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm p-8">
+                    <div className="h-full flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-2xl font-semibold text-foreground">Original Legacy Code</h2>
+                            <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)}>
+                                <X className="h-6 w-6" />
+                            </Button>
                         </div>
-
-                        <div className="bg-secondary/30 overflow-hidden">
-                            <div className="flex text-xs h-[280px] overflow-auto">
-                                <div className="flex flex-col bg-primary/5 text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none sticky left-0">
-                                    {afterCode.split("\n").map((_, i) => (
-                                        <span key={i} className="leading-5 text-right min-w-[2rem]">
-                                            {i + 1}
-                                        </span>
-                                    ))}
-                                </div>
-
-                                <pre className="py-2 px-3 overflow-x-auto flex-1">
-                                    <code className="text-xs leading-5 font-mono whitespace-pre">
-                                        {afterCode.split("\n").map((line, i) => (
-                                            <div
-                                                key={i}
-                                                className={`leading-5 ${line.includes("@Injectable") || line.includes("@InjectRepository") || line.includes("async")
-                                                    ? "text-primary"
-                                                    : line.includes("import") || line.includes("export")
-                                                        ? "text-chart-2"
-                                                        : "text-foreground/80"
-                                                    }`}
-                                            >
-                                                {line || " "}
-                                            </div>
-                                        ))}
-                                    </code>
-                                </pre>
+                        
+                        <div className="flex items-center gap-3 px-4 py-2 border border-border rounded-t-lg bg-primary/5 border-b-0 shrink-0 flex-wrap mt-2">
+                            <span className="text-xs font-medium text-muted-foreground mr-1">Detected Source:</span>
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-orange-500/15 text-orange-400 text-xs font-semibold">
+                                {detectedLang}
+                            </span>
+                        </div>
+                        
+                        <div className="flex-1 border border-border rounded-b-lg overflow-hidden flex flex-col">
+                            <div className="bg-secondary/30 flex-1 flex flex-col overflow-hidden">
+                                {renderCodeSide(beforeLines, 'text-sm', 'leading-6')}
                             </div>
                         </div>
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            )}
+        </>
     )
 }
