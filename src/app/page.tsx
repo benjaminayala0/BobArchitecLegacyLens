@@ -10,8 +10,9 @@ import { CodeViewer } from "@/components/code-viewer"
 import { DatabaseSchema } from "@/components/database-schema"
 import { ApiContract } from "@/components/api-contract"
 import { Button } from "@/components/ui/button"
-import { Download, ArrowRight, Sparkles } from "lucide-react"
+import { Download, ArrowRight, Sparkles, AlertCircle } from "lucide-react"
 import { downloadZip, adaptJsonToFolderNodes, type BobBlueprint } from "@/lib"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function BlueprintAI() {
   const [currentView, setCurrentView] = useState<"analyze" | "blueprint">("analyze")
@@ -28,39 +29,55 @@ export default function BlueprintAI() {
     // Read the first file
     const file = files[0]
     const code = await file.text()
-    await analyzeCode(code)
+    await analyzeCode(code, undefined)
   }
 
   const handleCodePaste = async (code: string) => {
     console.log("Code pasted:", code.substring(0, 100))
     setIsAnalyzing(true)
     setAnalysisComplete(false)
-    await analyzeCode(code)
+    await analyzeCode(code, undefined)
   }
 
-  const analyzeCode = async (code: string) => {
+  const handleZipUpload = async (zipBase64: string) => {
+    console.log("ZIP uploaded, size:", zipBase64.length)
+    setIsAnalyzing(true)
+    setAnalysisComplete(false)
+    await analyzeCode(undefined, zipBase64)
+  }
+
+  const analyzeCode = async (code?: string, zipBase64?: string) => {
     try {
-      // Store the original code
-      setOriginalCode(code)
+      // Store the original code if provided
+      if (code) {
+        setOriginalCode(code)
+      }
       
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code, zipBase64 }),
       })
 
       if (!response.ok) {
-        throw new Error('Analysis failed')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Analysis failed')
       }
 
       const data: BobBlueprint = await response.json()
-      // Add original code to blueprint data
-      setBlueprintData({ ...data, original_code: code })
+      
+      // Store original code if not already set
+      if (data.original_code && !originalCode) {
+        setOriginalCode(data.original_code)
+      }
+      
+      setBlueprintData(data)
       setAnalysisComplete(true)
     } catch (error) {
       console.error('Error analyzing code:', error)
+      alert(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setIsAnalyzing(false)
     }
   }
@@ -118,7 +135,11 @@ export default function BlueprintAI() {
 
             <div className="flex gap-6 items-start">
               <div className="flex-1 min-w-0">
-                <UploadZone onUpload={handleUpload} onCodePaste={handleCodePaste} />
+                <UploadZone
+                  onUpload={handleUpload}
+                  onCodePaste={handleCodePaste}
+                  onZipUpload={handleZipUpload}
+                />
               </div>
 
               {isAnalyzing && (

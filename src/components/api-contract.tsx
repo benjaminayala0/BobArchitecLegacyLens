@@ -37,7 +37,19 @@ const methodColors: Record<string, string> = {
 }
 
 export function ApiContract({ blueprint }: ApiContractProps) {
-    const apiMarkdown = blueprint ? generateApiContract(blueprint) : null
+    // Use apiContracts from watsonx.ai if available, otherwise generate from entities
+    let endpoints: Endpoint[]
+    
+    if (blueprint?.apiContracts && blueprint.apiContracts.length > 0) {
+        // Use API contracts directly from watsonx.ai
+        endpoints = blueprint.apiContracts
+    } else if (blueprint) {
+        // Generate from entities using the helper
+        const apiMarkdown = generateApiContract(blueprint)
+        endpoints = parseEndpoints(apiMarkdown)
+    } else {
+        endpoints = fallbackEndpoints
+    }
 
     const parseEndpoints = (markdown: string): Endpoint[] => {
         const endpoints: Endpoint[] = []
@@ -58,8 +70,6 @@ export function ApiContract({ blueprint }: ApiContractProps) {
 
         return endpoints.length > 0 ? endpoints : fallbackEndpoints
     }
-
-    const endpoints = apiMarkdown ? parseEndpoints(apiMarkdown) : fallbackEndpoints
 
     return (
         <Card className="bg-card border-border h-full">

@@ -9,19 +9,40 @@ import { Textarea } from "@/components/ui/textarea"
 interface UploadZoneProps {
     onUpload?: (files: FileList) => void
     onCodePaste?: (code: string) => void
+    onZipUpload?: (zipBase64: string) => void
 }
 
-export function UploadZone({ onUpload, onCodePaste }: UploadZoneProps) {
+export function UploadZone({ onUpload, onCodePaste, onZipUpload }: UploadZoneProps) {
     const [isDragging, setIsDragging] = useState(false)
     const [showPasteArea, setShowPasteArea] = useState(false)
     const [pastedCode, setPastedCode] = useState("")
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const handleDrop = (e: React.DragEvent) => {
+    const handleDrop = async (e: React.DragEvent) => {
         e.preventDefault()
         setIsDragging(false)
-        if (e.dataTransfer.files && onUpload) {
-            onUpload(e.dataTransfer.files)
+        if (e.dataTransfer.files) {
+            await handleFiles(e.dataTransfer.files)
+        }
+    }
+
+    const handleFiles = async (files: FileList) => {
+        if (files.length === 0) return
+
+        const file = files[0]
+        
+        // Check if it's a ZIP file
+        if (file.name.endsWith('.zip') && onZipUpload) {
+            // Convert ZIP to base64
+            const reader = new FileReader()
+            reader.onload = () => {
+                const base64 = (reader.result as string).split(',')[1]
+                onZipUpload(base64)
+            }
+            reader.readAsDataURL(file)
+        } else if (onUpload) {
+            // Handle regular code files
+            onUpload(files)
         }
     }
 
@@ -54,9 +75,8 @@ export function UploadZone({ onUpload, onCodePaste }: UploadZoneProps) {
                     type="file"
                     ref={fileInputRef}
                     className="hidden"
-                    accept=".zip,.java,.php,.sql,.py,.js,.ts"
-                    multiple
-                    onChange={(e) => e.target.files && onUpload?.(e.target.files)}
+                    accept=".zip,.java,.php,.sql,.py,.js,.ts,.tsx,.jsx,.cobol,.cob"
+                    onChange={(e) => e.target.files && handleFiles(e.target.files)}
                 />
 
                 {!showPasteArea ? (

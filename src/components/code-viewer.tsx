@@ -1,12 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Maximize2 } from "lucide-react"
+import { Maximize2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { type BobBlueprint } from "@/lib"
 
 interface CodeViewerProps {
-  blueprint: BobBlueprint | null
+    blueprint: BobBlueprint | null
 }
 
 const fallbackBeforeCode = `<?php
@@ -69,106 +70,98 @@ export class OrderService {
     const order = this.orderRepository.create(createOrderDto);
     return this.orderRepository.save(order);
   }
-
-  async findOne(id: string): Promise<Order | null> {
-    return this.orderRepository.findOne({
-      where: { id },
-    });
-  }
 }`
 
 export function CodeViewer({ blueprint }: CodeViewerProps) {
-    // Use the original code from blueprint if available, otherwise use fallback
+    const [isExpanded, setIsExpanded] = useState(false)
+
+    // Tu lógica original intacta
     const beforeCode = blueprint?.original_code || fallbackBeforeCode
-    const afterCode = fallbackAfterCode
+
+    const detectLanguage = (code: string): string => {
+        if (code.includes('import sqlite3') || code.includes('def ') || code.includes('cursor.execute')) return 'Python'
+        if (code.includes('<?php') || code.includes('mysql_')) return 'PHP'
+        if (code.includes('public class') || code.includes('System.out')) return 'Java'
+        if (code.includes('IDENTIFICATION DIVISION') || code.includes('PERFORM')) return 'COBOL'
+        return 'Legacy Code'
+    }
+
+    const detectedLang = detectLanguage(beforeCode)
+    const beforeLines = beforeCode.split("\n")
+
+    // Lado legacy (rojo)
+    const renderBeforeSide = (maxHeight: string = "max-h-[280px]") => (
+        <div className="rounded-lg overflow-hidden border border-destructive/30 flex-1">
+            <div className="bg-destructive/10 px-3 py-1.5 border-b border-destructive/30 flex items-center justify-between">
+                <span className="text-xs font-medium text-destructive">Legacy Code</span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-orange-500/15 text-orange-400 text-xs font-semibold">
+                    {detectedLang}
+                </span>
+            </div>
+            {/* ← Un solo contenedor con overflow-auto, quitamos el div intermedio */}
+            <div className={`flex text-xs ${maxHeight} overflow-auto bg-secondary/30`}>
+                <div className="flex flex-col bg-destructive/5 text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none sticky left-0 shrink-0">
+                    {beforeLines.map((_, i) => (
+                        <span key={i} className="leading-5 text-right min-w-[2.5rem]">{i + 1}</span>
+                    ))}
+                </div>
+                <pre className="py-2 px-3 text-muted-foreground flex-1">
+                    <code className="text-xs leading-5 font-mono">
+                        {beforeLines.map((line, i) => (
+                            <div
+                                key={i}
+                                className={`leading-5 ${line.includes("mysql_") || line.includes("password") ||
+                                        line.includes("cursor.execute") || line.includes("f\"") ||
+                                        line.includes("$userId")
+                                        ? "bg-destructive/20 text-destructive -mx-3 px-3"
+                                        : ""
+                                    }`}
+                            >
+                                {line || " "}
+                            </div>
+                        ))}
+                    </code>
+                </pre>
+            </div>
+        </div>
+    )
 
     return (
-        <Card className="bg-card border-border">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium text-foreground">
-                    Before and After Code Viewer
-                </CardTitle>
+        <>
+            <Card className="bg-card border-border">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                    <CardTitle className="text-sm font-bold text-foreground">
+                        Before and After Code Viewer
+                    </CardTitle>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsExpanded(true)}>
+                        <Maximize2 className="h-4 w-4" />
+                    </Button>
+                </CardHeader>
 
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <Maximize2 className="h-4 w-4" />
-                </Button>
-            </CardHeader>
-
-            <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                    {/* Before Code - Legacy */}
-                    <div className="rounded-lg overflow-hidden border border-destructive/30">
-                        <div className="bg-destructive/10 px-3 py-1.5 border-b border-destructive/30">
-                            <span className="text-xs font-medium text-destructive">Legacy Code</span>
-                        </div>
-
-                        <div className="bg-secondary/30 overflow-hidden">
-                            <div className="flex text-xs max-h-[280px] overflow-auto">
-                                <div className="flex flex-col bg-destructive/5 text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none">
-                                    {beforeCode.split("\n").map((_, i) => (
-                                        <span key={i} className="leading-5 text-right">
-                                            {i + 1}
-                                        </span>
-                                    ))}
-                                </div>
-
-                                <pre className="py-2 px-3 text-muted-foreground overflow-x-auto flex-1">
-                                    <code className="text-xs leading-5 font-mono">
-                                        {beforeCode.split("\n").map((line, i) => (
-                                            <div
-                                                key={i}
-                                                className={`leading-5 ${line.includes("mysql_") || line.includes("password") || line.includes("$userId")
-                                                    ? "bg-destructive/20 text-destructive -mx-3 px-3"
-                                                    : ""
-                                                    }`}
-                                            >
-                                                {line || " "}
-                                            </div>
-                                        ))}
-                                    </code>
-                                </pre>
-                            </div>
-                        </div>
+                <CardContent>
+                    <div className="grid grid-cols-1 gap-3">
+                        {renderBeforeSide()}
                     </div>
+                </CardContent>
+            </Card>
 
-                    {/* After Code - Modern */}
-                    <div className="rounded-lg overflow-hidden border border-primary/30">
-                        <div className="bg-primary/10 px-3 py-1.5 border-b border-primary/30">
-                            <span className="text-xs font-medium text-primary">Modernized Code</span>
+            {/* Modal pantalla completa */}
+            {isExpanded && (
+                <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm p-8">
+                    <div className="h-full flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-2xl font-semibold text-foreground">Before and After Code Viewer</h2>
+                            <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)}>
+                                <X className="h-6 w-6" />
+                            </Button>
                         </div>
 
-                        <div className="bg-secondary/30 overflow-hidden">
-                            <div className="flex text-xs max-h-[280px] overflow-auto">
-                                <div className="flex flex-col bg-primary/5 text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none">
-                                    {afterCode.split("\n").map((_, i) => (
-                                        <span key={i} className="leading-5 text-right">
-                                            {i + 1}
-                                        </span>
-                                    ))}
-                                </div>
-
-                                <pre className="py-2 px-3 overflow-x-auto flex-1">
-                                    <code className="text-xs leading-5 font-mono">
-                                        {afterCode.split("\n").map((line, i) => (
-                                            <div
-                                                key={i}
-                                                className={`leading-5 ${line.includes("@Injectable") || line.includes("@InjectRepository") || line.includes("async")
-                                                    ? "text-primary"
-                                                    : line.includes("import")
-                                                        ? "text-chart-2"
-                                                        : "text-foreground/80"
-                                                    }`}
-                                            >
-                                                {line || " "}
-                                            </div>
-                                        ))}
-                                    </code>
-                                </pre>
-                            </div>
+                        <div className="flex-1 flex flex-col gap-3 overflow-hidden">
+                            {renderBeforeSide("max-h-full")}
                         </div>
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            )}
+        </>
     )
 }
