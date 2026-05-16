@@ -13,6 +13,7 @@ interface AnalysisStep {
 
 interface AnalysisPanelProps {
     isAnalyzing: boolean
+    code?: string
 }
 
 const initialSteps: AnalysisStep[] = [
@@ -23,10 +24,14 @@ const initialSteps: AnalysisStep[] = [
     { id: "generate", label: "Generating modern architecture", status: "pending" },
 ]
 
-export function AnalysisPanel({ isAnalyzing }: AnalysisPanelProps) {
+export function AnalysisPanel({ isAnalyzing, code }: AnalysisPanelProps) {
     const [steps, setSteps] = useState<AnalysisStep[]>(initialSteps)
     const [currentLine, setCurrentLine] = useState(0)
     const [scanningText, setScanningText] = useState("Initializing...")
+
+    const codeLines = code ? code.split('\n') : []
+    const displayLines = codeLines.length > 0 ? codeLines : Array.from({ length: 12 }, () => "...")
+    const totalLines = displayLines.length
 
     const scanningLines = [
         "Reading legacy code structure...",
@@ -50,14 +55,14 @@ export function AnalysisPanel({ isAnalyzing }: AnalysisPanelProps) {
             return
         }
 
-        // Animate scanning text
+        // Animate scanning text and line progression
         const textInterval = setInterval(() => {
             setCurrentLine((prev) => {
-                const next = (prev + 1) % scanningLines.length
-                setScanningText(scanningLines[next])
-                return next
+                const next = prev + 1
+                return next >= totalLines ? 0 : next
             })
-        }, 1200)
+            setScanningText(scanningLines[Math.floor(Math.random() * scanningLines.length)])
+        }, Math.max(50, 1500 / totalLines)) // Faster if more lines
 
         // Animate steps progression
         const stepInterval = setInterval(() => {
@@ -113,14 +118,14 @@ export function AnalysisPanel({ isAnalyzing }: AnalysisPanelProps) {
 
             <CardContent className="space-y-4">
                 {/* Code scanning visualization */}
-                <div className="bg-secondary/50 rounded-lg p-4 font-mono text-xs overflow-hidden">
+                <div className="bg-secondary/50 rounded-lg p-4 font-mono text-xs overflow-y-auto max-h-[250px] relative">
                     <div className="flex gap-4">
                         {/* Line numbers */}
                         <div className="flex flex-col text-muted-foreground/50 select-none">
-                            {Array.from({ length: 12 }, (_, i) => (
+                            {displayLines.map((_, i) => (
                                 <span
                                     key={i}
-                                    className={`leading-5 transition-colors ${i === currentLine % 12 ? "text-primary" : ""
+                                    className={`leading-5 transition-colors ${i === currentLine ? "text-primary font-bold" : ""
                                         }`}
                                 >
                                     {String(i + 1).padStart(2, "0")}
@@ -132,21 +137,21 @@ export function AnalysisPanel({ isAnalyzing }: AnalysisPanelProps) {
                             {/* Scan line effect */}
                             <div
                                 className="absolute left-0 right-0 h-5 bg-primary/10 border-l-2 border-primary transition-all duration-300"
-                                style={{ top: `${(currentLine % 12) * 20}px` }}
+                                style={{ top: `${currentLine * 20}px` }}
                             />
 
                             <div className="relative space-y-0">
-                                {Array.from({ length: 12 }, (_, i) => (
+                                {displayLines.map((lineContent, i) => (
                                     <div
                                         key={i}
-                                        className={`leading-5 transition-all duration-300 ${i === currentLine % 12
+                                        className={`leading-5 transition-all duration-300 whitespace-pre overflow-hidden text-ellipsis ${i === currentLine
                                             ? "text-primary"
-                                            : i < currentLine % 12
-                                                ? "text-muted-foreground"
+                                            : i < currentLine
+                                                ? "text-foreground/70"
                                                 : "text-muted-foreground/30"
                                             }`}
                                     >
-                                        {i === currentLine % 12 ? scanningText : "..."}
+                                        {codeLines.length > 0 ? lineContent || " " : (i === currentLine ? scanningText : lineContent)}
                                     </div>
                                 ))}
                             </div>
@@ -184,7 +189,7 @@ export function AnalysisPanel({ isAnalyzing }: AnalysisPanelProps) {
                 <div className="space-y-2 pt-2">
                     <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">
-                            {isAnalyzing ? "Analyzing with DeepSeek AI..." : "Analysis complete"}
+                            {isAnalyzing ? "Analyzing with IBM Watsonx..." : "Analysis complete"}
                         </span>
 
                         <span className="text-primary font-medium">{progressPercentage}%</span>

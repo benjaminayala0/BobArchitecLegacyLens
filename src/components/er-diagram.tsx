@@ -295,11 +295,6 @@ export function ERDiagram({ blueprint }: ERDiagramProps) {
                                 <div className="text-muted-foreground text-sm">No diagram available</div>
                             </div>
                         )}
-                        {svgContent && (
-                            <div className="absolute bottom-2 right-2 text-[10px] text-muted-foreground/60 bg-background/80 px-2 py-0.5 rounded">
-                                Click to expand
-                            </div>
-                        )}
                     </div>
                 </CardContent>
             </Card>

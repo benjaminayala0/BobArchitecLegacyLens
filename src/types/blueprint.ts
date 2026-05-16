@@ -50,13 +50,27 @@ export interface FolderStructure {
 }
 
 /**
- * Complete blueprint structure returned by IBM Bob analysis
+ * API Contract endpoint definition
+ */
+export interface ApiEndpoint {
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+  endpoint: string;
+  description: string;
+}
+
+/**
+ * Complete blueprint structure returned by IBM watsonx.ai analysis
  */
 export interface BobBlueprint {
   entities: Entity[];
   relationships: Relationship[];
   suggested_folder_structure: FolderStructure;
   original_code?: string;
+  databaseSchema?: string;
+  erDiagram?: string;
+  folderStructure?: string;
+  modernizedCode?: string;
+  apiContracts?: ApiEndpoint[];
 }
 
 /**

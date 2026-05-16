@@ -20,6 +20,7 @@ export default function BlueprintAI() {
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [blueprintData, setBlueprintData] = useState<BobBlueprint | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [activeCode, setActiveCode] = useState<string>("")
 
   const handleUpload = async (files: FileList) => {
     console.log("Files uploaded:", files)
@@ -87,6 +88,7 @@ export default function BlueprintAI() {
 
   const analyzeCode = async (code: string) => {
     try {
+      setActiveCode(code)
       console.log('Sending code to API for analysis...')
       console.log('Code length:', code.length)
       
@@ -311,7 +313,7 @@ export class ${serviceName} {
 
               {isAnalyzing && (
                 <div className="flex-1 min-w-0 flex flex-col gap-4">
-                  <AnalysisPanel isAnalyzing={true} />
+                  <AnalysisPanel isAnalyzing={true} code={activeCode} />
 
                   {analysisComplete && blueprintData && (
                     <Button
@@ -348,23 +350,23 @@ export class ${serviceName} {
             </div>
 
             <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-12 lg:col-span-5 h-[400px] overflow-y-auto">
+              <div className="col-span-12 lg:col-span-5">
                 <ERDiagram blueprint={blueprintData} />
               </div>
 
-              <div className="col-span-12 lg:col-span-4 h-[400px] overflow-y-auto">
+              <div className="col-span-12 lg:col-span-4 ">
                 <FolderScaffolding blueprint={blueprintData} />
               </div>
 
-              <div className="col-span-12 lg:col-span-3 h-[400px] overflow-y-auto">
+              <div className="col-span-12 lg:col-span-3 ">
                 <DatabaseSchema blueprint={blueprintData} />
               </div>
 
-              <div className="col-span-12 lg:col-span-8 h-[400px] overflow-y-auto">
+              <div className="col-span-12 lg:col-span-8">
                 <CodeViewer blueprint={blueprintData} />
               </div>
 
-              <div className="col-span-12 lg:col-span-4 h-[400px] overflow-y-auto">
+              <div className="col-span-12 lg:col-span-4">
                 <ApiContract blueprint={blueprintData} />
               </div>
             </div>

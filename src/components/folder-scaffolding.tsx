@@ -216,7 +216,7 @@ export function FolderScaffolding({ blueprint }: FolderScaffoldingProps) {
     const [fileContent, setFileContent] = useState<string>("")
 
     // Convert blueprint folder structure to TreeNode format
-    const folderStructure = blueprint
+    const folderStructure = blueprint?.suggested_folder_structure
         ? convertToTreeNode("Modernized Architecture", blueprint.suggested_folder_structure)
         : fallbackFolderStructure
 

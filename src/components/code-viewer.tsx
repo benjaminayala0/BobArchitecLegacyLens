@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { type BobBlueprint } from "@/lib"
 
 interface CodeViewerProps {
-  blueprint: BobBlueprint | null
+    blueprint: BobBlueprint | null
 }
 
 const fallbackBeforeCode = `<?php
@@ -83,11 +83,10 @@ export function CodeViewer({ blueprint }: CodeViewerProps) {
                         {lines.map((line, i) => (
                             <div
                                 key={i}
-                                className={`${lineSpacing} ${
-                                    line.includes("mysql_") || line.includes("password") || line.includes("cursor.execute") || line.includes("f\"")
+                                className={`${lineSpacing} ${line.includes("mysql_") || line.includes("password") || line.includes("cursor.execute") || line.includes("f\"")
                                         ? "bg-destructive/20 text-destructive -mx-3 px-3"
                                         : "text-muted-foreground"
-                                }`}
+                                    }`}
                             >
                                 {line || " "}
                             </div>
@@ -118,7 +117,7 @@ export function CodeViewer({ blueprint }: CodeViewerProps) {
                             {detectedLang}
                         </span>
                     </div>
-                    
+
                     <div className="border border-border rounded-b-lg overflow-hidden flex flex-col">
                         <div className="bg-secondary/30 h-[280px] flex flex-col overflow-hidden">
                             {renderCodeSide(beforeLines)}
@@ -136,14 +135,14 @@ export function CodeViewer({ blueprint }: CodeViewerProps) {
                                 <X className="h-6 w-6" />
                             </Button>
                         </div>
-                        
+
                         <div className="flex items-center gap-3 px-4 py-2 border border-border rounded-t-lg bg-primary/5 border-b-0 shrink-0 flex-wrap mt-2">
                             <span className="text-xs font-medium text-muted-foreground mr-1">Detected Source:</span>
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-orange-500/15 text-orange-400 text-xs font-semibold">
                                 {detectedLang}
                             </span>
                         </div>
-                        
+
                         <div className="flex-1 border border-border rounded-b-lg overflow-hidden flex flex-col">
                             <div className="bg-secondary/30 flex-1 flex flex-col overflow-hidden">
                                 {renderCodeSide(beforeLines, 'text-sm', 'leading-6')}

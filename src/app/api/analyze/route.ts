@@ -1,227 +1,335 @@
 /**
- * API Route - DeepSeek Analysis Endpoint
+ * API Route - IBM watsonx.ai Analysis Endpoint
  * 
- * Analyzes legacy code using DeepSeek v4 Flash through OpenRouter.
- * Returns a blueprint with entities, relationships, and folder structure.
+ * Analyzes legacy code using IBM watsonx.ai (Granite 3.3 8B Instruct).
+ * Returns a blueprint with entities, relationships, folder structure, and modernized code.
  */
 
 import { NextResponse } from 'next/server'
-import { OpenRouter } from '@openrouter/sdk'
 import type { BobBlueprint } from '@/types/blueprint'
 
-// Initialize OpenRouter client
-const openrouter = new OpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY || ''
-})
+/**
+ * Authenticate with IBM Cloud IAM to get a Bearer token
+ */
+async function getIAMToken(apiKey: string): Promise<string> {
+  const response = await fetch('https://iam.cloud.ibm.com/identity/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      grant_type: 'urn:ibm:params:oauth:grant-type:apikey',
+      apikey: apiKey,
+    }),
+  })
+
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`IAM authentication failed: ${error}`)
+  }
+
+  const data = await response.json()
+  return data.access_token
+}
 
 /**
- * System prompt that ensures DeepSeek returns valid JSON matching BobBlueprint interface
+ * Extract code files from a base64-encoded ZIP
  */
-const SYSTEM_PROMPT = `You are Bob, an expert software architect specializing in analyzing legacy code and designing modern database schemas.
+async function extractZipFiles(zipBase64: string): Promise<string> {
+  try {
+    // Dynamic import of JSZip
+    const JSZip = (await import('jszip')).default
 
-Your task is to analyze the provided legacy code and return ONLY a valid JSON object (no markdown, no code blocks, no explanations) that matches this exact structure:
+    // Decode base64 to binary
+    const binaryString = atob(zipBase64)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i)
+    }
 
-{
-  "entities": [
-    {
-      "name": "EntityName",
-      "table": "table_name",
-      "fields": [
-        {
-          "name": "field_name",
-          "type": "string|integer|decimal|boolean|date|timestamp|text",
-          "primary_key": true|false (optional),
-          "foreign_key": "referenced_table.field" (optional),
-          "auto_increment": true|false (optional),
-          "nullable": true|false (optional),
-          "unique": true|false (optional)
-        }
-      ]
+    // Load ZIP
+    const zip = await JSZip.loadAsync(bytes)
+
+    // Extract code files
+    let concatenatedCode = ''
+    const codeExtensions = ['.java', '.php', '.py', '.js', '.ts', '.tsx', '.jsx', '.sql', '.cobol', '.cob', '.c', '.cpp', '.h', '.cs', '.rb', '.go']
+    const skipDirs = ['node_modules', '.git', 'dist', 'build', 'target', '.next', 'out']
+
+    for (const [filename, file] of Object.entries(zip.files)) {
+      // Skip directories
+      if (file.dir) continue
+
+      // Skip binary files and excluded directories
+      const isInSkipDir = skipDirs.some(dir => filename.includes(`${dir}/`) || filename.startsWith(`${dir}/`))
+      if (isInSkipDir) continue
+
+      // Check if it's a code file
+      const hasCodeExtension = codeExtensions.some(ext => filename.toLowerCase().endsWith(ext))
+      if (!hasCodeExtension) continue
+
+      // Extract text content
+      const content = await file.async('text')
+      concatenatedCode += `\n\n// ========== FILE: ${filename} ==========\n\n${content}`
     }
-  ],
-  "relationships": [
-    {
-      "from": "EntityName1",
-      "to": "EntityName2",
-      "type": "one-to-one|one-to-many|many-to-one|many-to-many",
-      "description": "relationship description" (optional)
-    }
-  ],
-  "suggested_folder_structure": {
-    "src": {
-      "models": ["Model1.ts", "Model2.ts"],
-      "controllers": ["Controller1.ts"],
-      "services": ["Service1.ts"],
-      "repositories": ["Repository1.ts"],
-      "routes": ["routes1.ts"],
-      "middleware": ["middleware1.ts"],
-      "utils": ["util1.ts"],
-      "config": ["config1.ts"]
-    },
-    "tests": {
-      "unit": ["test1.test.ts"],
-      "integration": ["integration1.test.ts"]
-    },
-    "docs": ["API.md", "DATABASE_SCHEMA.md"]
+
+    return concatenatedCode || 'No code files found in ZIP'
+  } catch (error) {
+    console.error('Error extracting ZIP:', error)
+    throw new Error('Failed to extract ZIP file')
   }
 }
 
-CRITICAL RULES:
-1. Return ONLY the JSON object - no markdown formatting, no code blocks, no explanations
-2. All entity names must be PascalCase (e.g., "Guest", "RoomType")
-3. All table names must be snake_case (e.g., "guests", "room_types")
-4. All field names must be snake_case (e.g., "guest_id", "first_name")
-5. Every entity must have at least one primary key field
-6. Foreign keys must reference existing tables in format "table_name.field_name"
-7. Include common fields like created_at, updated_at where appropriate
-8. Relationship types must be exactly: "one-to-one", "one-to-many", "many-to-one", or "many-to-many"
-9. The suggested_folder_structure must follow a logical MVC or layered architecture pattern
-10. Include appropriate TypeScript file extensions (.ts) in the folder structure
+/**
+ * System prompt for IBM watsonx.ai
+ */
+const SYSTEM_PROMPT = `You are a software architect. Analyze the legacy code and return ONLY this JSON, no markdown, no explanations:
 
-Analyze the code carefully and identify:
-- All data entities and their attributes
-- Relationships between entities
-- A modern, scalable folder structure for the application
+{
+  "entities": [{"name": "Name", "table": "table", "fields": [{"name": "id", "type": "integer", "primary_key": true}]}],
+  "relationships": [{"from": "Entity1", "to": "Entity2", "type": "one-to-many", "description": "desc"}],
+  "suggested_folder_structure": {"src": {"controllers": ["Controller.ts"], "services": ["Service.ts"], "models": ["Model.ts"]}},
+  "databaseSchema": "CREATE TABLE example (id SERIAL PRIMARY KEY);",
+  "erDiagram": "erDiagram\n  Entity1 {\n    int id PK\n  }",
+  "folderStructure": "src/\n  controllers/\n  services/\n  models/",
+  "modernizedCode": "// TypeScript modernized version\nexport class Service {}",
+  "apiContracts": [{"method": "GET", "endpoint": "/api/resource", "description": "Get resources"}]
+}
 
-Return ONLY the JSON object.`
+RULES:
+- Return ONLY valid JSON, nothing else
+- Maximum 5 entities
+- Maximum 3 relationships  
+- modernizedCode: max 20 lines
+- databaseSchema: max 3 tables
+- The JSON must be 100% complete and valid`
 
 /**
- * API route that analyzes legacy code using DeepSeek
+ * API route handler
  */
 export async function POST(req: Request) {
   try {
-    console.log('[API] Received analysis request')
-    
-    // Parse the incoming request body
     const body = await req.json()
-    const { code } = body
+    const { code, zipBase64 } = body
 
-    console.log('[API] Code length:', code?.length || 0)
-
-    // Validate input
-    if (!code || typeof code !== 'string') {
-      console.error('[API] Invalid code input')
+    let codeToAnalyze: string
+    if (zipBase64) {
+      codeToAnalyze = await extractZipFiles(zipBase64)
+    } else if (code) {
+      codeToAnalyze = code
+    } else {
       return NextResponse.json(
-        { error: 'Invalid request: code field is required and must be a string' },
+        { success: false, error: 'Either code or zipBase64 must be provided' },
         { status: 400 }
       )
     }
 
-    // Validate API key
-    if (!process.env.OPENROUTER_API_KEY) {
-      console.error('[API] OPENROUTER_API_KEY is not configured')
+    const apiKey = process.env.WATSONX_API_KEY
+    const projectId = process.env.WATSONX_PROJECT_ID
+    const watsonxUrl = process.env.WATSONX_URL
+
+    if (!apiKey || !projectId || !watsonxUrl) {
       return NextResponse.json(
-        { error: 'API configuration error: OpenRouter API key is missing' },
+        { success: false, error: 'Server configuration error' },
         { status: 500 }
       )
     }
 
-    console.log('[API] Calling DeepSeek via OpenRouter...')
+    const accessToken = await getIAMToken(apiKey)
 
-    // Call DeepSeek through OpenRouter
-    const stream = await openrouter.chat.send({
-      chatRequest: {
-        model: 'deepseek/deepseek-r1-distill-llama-70b',
-        messages: [
-          {
-            role: 'system',
-            content: SYSTEM_PROMPT
-          },
-          {
-            role: 'user',
-            content: `Analyze this legacy code and return a JSON blueprint:\n\n${code}`
-          }
-        ],
-        stream: true
-      }
-    })
-
-    // Collect the streamed response
-    let response = ''
-
-    console.log('[API] Streaming response from DeepSeek...')
-    
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content
-      if (content) {
-        response += content
-      }
-    }
-
-    console.log('[API] Stream complete. Response length:', response.length)
-
-    // Clean up the response - remove markdown code blocks if present
-    let cleanedResponse = response.trim()
-    
-    // Remove markdown code blocks (```json ... ``` or ``` ... ```)
-    if (cleanedResponse.startsWith('```')) {
-      console.log('[API] Removing markdown code blocks')
-      cleanedResponse = cleanedResponse.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '')
-    }
-
-    // Parse the JSON response
-    let analysis: BobBlueprint
-    try {
-      console.log('[API] Parsing JSON response...')
-      analysis = JSON.parse(cleanedResponse)
-      console.log('[API] Successfully parsed. Entities:', analysis.entities?.length || 0)
-    } catch (parseError) {
-      console.error('[API] Failed to parse DeepSeek response:', parseError)
-      console.error('[API] Raw response preview:', response.substring(0, 500))
-      return NextResponse.json(
+    // Helper to call watsonx
+    const callWatsonx = async (systemPrompt: string, userMessage: string) => {
+      const response = await fetch(
+        `${watsonxUrl}/ml/v1/text/chat?version=2024-05-31`,
         {
-          error: 'Failed to parse AI response as JSON',
-          details: parseError instanceof Error ? parseError.message : 'Unknown parsing error',
-          preview: response.substring(0, 200)
-        },
-        { status: 500 }
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            model_id: 'ibm/granite-4-h-small',
+            project_id: projectId,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userMessage },
+            ],
+            parameters: { max_tokens: 5000, temperature: 0.1 },
+          }),
+        }
       )
+      if (!response.ok) {
+        const err = await response.text()
+        throw new Error(`watsonx error: ${err}`)
+      }
+      const data = await response.json()
+      return data.choices?.[0]?.message?.content ?? ''
     }
 
-    // Validate the structure
+    const parseJSON = (text: string) => {
+      let cleaned = text.trim()
+      cleaned = cleaned.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim()
+      const first = cleaned.indexOf('{')
+      const last = cleaned.lastIndexOf('}')
+      if (first !== -1 && last !== -1) cleaned = cleaned.substring(first, last + 1)
+
+      // Fix unescaped control characters inside JSON strings
+      // Walk char by char to find string boundaries and escape newlines within them
+      let result = ''
+      let inString = false
+      let escaped = false
+
+      for (let i = 0; i < cleaned.length; i++) {
+        const char = cleaned[i]
+
+        if (escaped) {
+          result += char
+          escaped = false
+          continue
+        }
+
+        if (char === '\\') {
+          escaped = true
+          result += char
+          continue
+        }
+
+        if (char === '"') {
+          inString = !inString
+          result += char
+          continue
+        }
+
+        if (inString) {
+          // Escape control characters inside strings
+          if (char === '\n') { result += '\\n'; continue }
+          if (char === '\r') { result += '\\r'; continue }
+          if (char === '\t') { result += '\\t'; continue }
+        }
+
+        result += char
+      }
+
+      cleaned = result
+
+      try {
+        return JSON.parse(cleaned)
+      } catch {
+        // Close unterminated string
+        let inStr = false
+        let esc = false
+        for (let i = 0; i < cleaned.length; i++) {
+          const c = cleaned[i]
+          if (esc) { esc = false; continue }
+          if (c === '\\') { esc = true; continue }
+          if (c === '"') inStr = !inStr
+        }
+        if (inStr) cleaned += '"'
+
+        cleaned = cleaned.replace(/,\s*$/, '')
+
+        const openBrackets = (cleaned.match(/\[/g) || []).length
+        const closeBrackets = (cleaned.match(/\]/g) || []).length
+        const openBraces = (cleaned.match(/{/g) || []).length
+        const closeBraces = (cleaned.match(/}/g) || []).length
+
+        cleaned += ']'.repeat(Math.max(0, openBrackets - closeBrackets))
+        cleaned += '}'.repeat(Math.max(0, openBraces - closeBraces))
+
+        return JSON.parse(cleaned)
+      }
+    }
+
+    // Call 1: entities, relationships, folder structure
+    const structurePrompt = `You are a software architect. Return ONLY minified JSON (no spaces, no newlines between fields). Analyze the actual code provided.
+
+Example format (minified):
+{"entities":[{"name":"User","table":"users","fields":[{"name":"id","type":"integer","primary_key":true},{"name":"name","type":"text"}]}],"relationships":[{"from":"User","to":"Order","type":"one-to-many","description":"user has orders"}],"suggested_folder_structure":{"src":{"controllers":["UserController.ts"],"services":["UserService.ts"],"models":["User.ts"]}},"folderStructure":"src/\n  controllers/\n    UserController.ts\n  services/\n    UserService.ts\n  models/\n    User.ts"}
+
+RULES:
+- Output MINIFIED JSON only - no pretty printing
+- Analyze the ACTUAL code, use real entity names from it
+- Max 6 entities, max 5 relationships
+- Max 3 files per folder
+- Return ONLY complete valid minified JSON`
+
+    const codePrompt = `You are a software architect. Analyze the provided legacy code (any language).
+
+Return ONLY minified valid JSON, no markdown:
+
+{"databaseSchema":"CREATE TABLE real_table (id SERIAL PRIMARY KEY, field VARCHAR(255) NOT NULL);","erDiagram":"erDiagram\n  EntityA {\n    int id PK\n    string field\n  }\n  EntityA ||--o{ EntityB : has","apiContracts":[{"method":"POST","endpoint":"/api/resource","description":"based on actual function"}]}
+
+RULES:
+- databaseSchema: PostgreSQL ONLY (SERIAL, VARCHAR, DECIMAL, TIMESTAMP, BOOLEAN), based on ACTUAL tables found
+- erDiagram: valid Mermaid.js with entity attributes inside {} AND relationships
+- apiContracts: based on ACTUAL functions found, max 6 endpoints
+- NO modernizedCode field
+- Return ONLY complete valid minified JSON`
+
+    const modernPrompt = `You are a software architect. Analyze the legacy code and return a modernized TypeScript version.
+
+Return ONLY minified valid JSON:
+{"modernizedCode":"// Modernized TypeScript\\nclass Service {\\n  async method(): Promise<void> {}\\n}"}
+
+CRITICAL RULES:
+- Maximum 15 lines
+- NO template literals with backtick characters - use single or double quotes only
+- NO string interpolation with backticks
+- Escape ALL newlines as \\n in the JSON string
+- Focus only on the most critical fix (SQL injection OR separation of concerns)
+- Return ONLY complete valid minified JSON`
+
+
+    const [structureText, codeText, modernText] = await Promise.all([
+      callWatsonx(structurePrompt, `Legacy code:\n\n${codeToAnalyze}`),
+      callWatsonx(codePrompt, `Legacy code:\n\n${codeToAnalyze}`),
+      callWatsonx(modernPrompt, `Legacy code:\n\n${codeToAnalyze}`),
+    ])
+
+    let structureData: any
+    let codeData: any
+    let modernData: any
+
+    try { structureData = parseJSON(structureText) }
+    catch (e) {
+      console.error('Structure parse error:', e)
+      console.error('Structure raw text:', structureText)
+      throw new Error('Failed to parse structure response')
+    }
+
+    try { codeData = parseJSON(codeText) }
+    catch (e) {
+      console.error('Code parse error:', e)
+      console.error('Code raw text:', codeText)
+      throw new Error('Failed to parse code response')
+    }
+
+    try { modernData = parseJSON(modernText) }
+    catch (e) {
+      console.error('Modern parse error:', e)
+      console.error('Modern raw text:', modernText)
+      modernData = { modernizedCode: '// Could not generate modernized code' }
+    }
+
+    const analysis: BobBlueprint = {
+      ...structureData,
+      ...codeData,
+      ...modernData,
+      original_code: codeToAnalyze,
+    }
+
     if (!analysis.entities || !Array.isArray(analysis.entities)) {
-      return NextResponse.json(
-        { error: 'Invalid response structure: missing or invalid entities array' },
-        { status: 500 }
-      )
+      throw new Error('Invalid response: missing entities')
     }
 
-    if (!analysis.relationships || !Array.isArray(analysis.relationships)) {
-      return NextResponse.json(
-        { error: 'Invalid response structure: missing or invalid relationships array' },
-        { status: 500 }
-      )
-    }
-
-    if (!analysis.suggested_folder_structure || typeof analysis.suggested_folder_structure !== 'object') {
-      return NextResponse.json(
-        { error: 'Invalid response structure: missing or invalid suggested_folder_structure' },
-        { status: 500 }
-      )
-    }
-
-    // Return the analysis
     return NextResponse.json(analysis, { status: 200 })
 
   } catch (error) {
     console.error('Error in /api/analyze:', error)
-    
-    // Provide more specific error messages
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { 
-          error: 'Internal server error during analysis',
-          details: error.message
-        },
-        { status: 500 }
-      )
-    }
-    
     return NextResponse.json(
-      { error: 'Internal server error during analysis' },
+      { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
 }
-
 // Made with Bob
