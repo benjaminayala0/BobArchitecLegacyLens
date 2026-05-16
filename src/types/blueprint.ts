@@ -93,16 +93,16 @@ export function sanitizeSqlIdentifier(identifier: string, context: string = "ide
   if (!identifier || typeof identifier !== 'string') {
     throw new Error(`Invalid ${context}: must be a non-empty string`);
   }
-  
+
   const trimmed = identifier.trim();
-  
+
   if (!isValidSqlIdentifier(trimmed)) {
     throw new Error(
       `Invalid ${context}: "${trimmed}". Must start with a letter or underscore, ` +
       `and contain only letters, numbers, and underscores.`
     );
   }
-  
+
   return trimmed;
 }
 
@@ -115,27 +115,27 @@ export function validateBlueprint(blueprint: unknown): asserts blueprint is BobB
   if (!blueprint || typeof blueprint !== 'object') {
     throw new Error('Invalid blueprint: must be an object');
   }
-  
+
   const bp = blueprint as Partial<BobBlueprint>;
-  
+
   if (!Array.isArray(bp.entities)) {
     throw new Error('Invalid blueprint: entities must be an array');
   }
-  
+
   if (bp.entities.length === 0) {
     throw new Error('Invalid blueprint: entities array cannot be empty');
   }
-  
+
   // Validate each entity
   bp.entities.forEach((entity, index) => {
     if (!entity.name || !entity.table || !Array.isArray(entity.fields)) {
       throw new Error(`Invalid entity at index ${index}: missing required properties`);
     }
-    
+
     // Validate entity identifiers
     sanitizeSqlIdentifier(entity.name, `entity name at index ${index}`);
     sanitizeSqlIdentifier(entity.table, `table name for entity "${entity.name}"`);
-    
+
     // Validate fields
     entity.fields.forEach((field, fieldIndex) => {
       if (!field.name || !field.type) {
@@ -146,7 +146,7 @@ export function validateBlueprint(blueprint: unknown): asserts blueprint is BobB
       sanitizeSqlIdentifier(field.name, `field name in entity "${entity.name}"`);
     });
   });
-  
+
   if (!Array.isArray(bp.relationships)) {
     throw new Error('Invalid blueprint: relationships must be an array');
   }

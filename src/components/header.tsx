@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { ThemeToggle } from "./theme-toggle"
 
 export function Header() {
     return (
@@ -39,11 +40,7 @@ export function Header() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                            A
-                        </AvatarFallback>
-                    </Avatar>
+                    <ThemeToggle />
                 </div>
             </div>
         </header>

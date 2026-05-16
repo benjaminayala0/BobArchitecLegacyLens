@@ -375,10 +375,6 @@ export class ${repoName} extends Repository<${resolvedName}> {
                     <CardTitle className="text-sm font-medium text-foreground">
                         Folder Scaffolding
                     </CardTitle>
-
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                        <Eye className="h-4 w-4" />
-                    </Button>
                 </CardHeader>
 
                 <CardContent>

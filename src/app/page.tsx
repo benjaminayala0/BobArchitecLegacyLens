@@ -31,7 +31,7 @@ export default function BlueprintAI() {
 
     try {
       const file = files[0]
-      
+
       // Check if it's a ZIP file
       if (file.name.endsWith('.zip')) {
         const code = await extractCodeFromZip(file)
@@ -51,25 +51,25 @@ export default function BlueprintAI() {
   const extractCodeFromZip = async (zipFile: File): Promise<string> => {
     const JSZip = (await import('jszip')).default
     const zip = new JSZip()
-    
+
     try {
       const contents = await zip.loadAsync(zipFile)
       let combinedCode = ''
-      
+
       // Extract code from common file types
       const codeExtensions = ['.java', '.php', '.py', '.js', '.ts', '.sql', '.c', '.cpp', '.cs', '.rb', '.go']
-      
+
       for (const [filename, file] of Object.entries(contents.files)) {
         if (!file.dir && codeExtensions.some(ext => filename.toLowerCase().endsWith(ext))) {
           const content = await file.async('text')
           combinedCode += `\n\n// ========== ${filename} ==========\n\n${content}`
         }
       }
-      
+
       if (!combinedCode) {
         throw new Error('No code files found in ZIP')
       }
-      
+
       return combinedCode
     } catch (error) {
       console.error('Error extracting ZIP:', error)
@@ -91,7 +91,7 @@ export default function BlueprintAI() {
       setActiveCode(code)
       console.log('Sending code to API for analysis...')
       console.log('Code length:', code.length)
-      
+
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
@@ -117,15 +117,15 @@ export default function BlueprintAI() {
 
       const data: BobBlueprint = await response.json()
       console.log('Analysis successful, entities found:', data.entities?.length || 0)
-      
+
       setBlueprintData({ ...data, original_code: code })
       setAnalysisComplete(true)
-      
+
       setTimeout(() => {
         setIsAnalyzing(false)
         setCurrentView("blueprint")
       }, 1500)
-      
+
     } catch (error) {
       console.error('Error analyzing code:', error)
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred during analysis'
@@ -150,7 +150,7 @@ export default function BlueprintAI() {
 
   const convertBlueprintToFolderNodes = (blueprint: BobBlueprint): any => {
     const structure = blueprint.suggested_folder_structure
-    
+
     const convertNode = (name: string, value: any): any => {
       if (Array.isArray(value)) {
         // It's a folder with files
@@ -183,12 +183,12 @@ export default function BlueprintAI() {
 
   const generateFileContent = (fileName: string, blueprint: BobBlueprint): string => {
     const ext = fileName.split('.').pop()?.toLowerCase()
-    
+
     // Generate entity files
     if (fileName.includes('Entity') || fileName.includes('Model')) {
       const entityName = fileName.replace(/\.(ts|js)$/, '').replace(/Entity|Model/, '')
       const entity = blueprint.entities.find(e => e.name.toLowerCase() === entityName.toLowerCase())
-      
+
       if (entity) {
         return `import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -200,12 +200,12 @@ ${entity.fields.map(f => `  @${f.primary_key ? 'PrimaryGeneratedColumn' : 'Colum
 `
       }
     }
-    
+
     // Generate service files
     if (fileName.includes('Service')) {
       const serviceName = fileName.replace(/\.(ts|js)$/, '')
       const entityName = serviceName.replace('Service', '')
-      
+
       return `import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -242,7 +242,7 @@ export class ${serviceName} {
 }
 `
     }
-    
+
     // Default content based on extension
     switch (ext) {
       case 'ts':

@@ -45,9 +45,37 @@ class OrderController {
   }
 }`
 
+const fallbackAfterCode = `// Modern TypeScript - OrderService.ts
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@typeorm/core';
+import { Repository } from 'typeorm';
+import { Order } from './entities/order.entity';
+import { CreateOrderDto } from './dto/create-order.dto';
+
+@Injectable()
+export class OrderService {
+  constructor(
+    @InjectRepository(Order)
+    private orderRepository: Repository<Order>,
+  ) {}
+
+  async findByUserId(userId: string): Promise<Order[]> {
+    return this.orderRepository.find({
+      where: { userId },
+      relations: ['items', 'customer'],
+    });
+  }
+
+  async create(createOrderDto: CreateOrderDto): Promise<Order> {
+    const order = this.orderRepository.create(createOrderDto);
+    return this.orderRepository.save(order);
+  }
+}`
+
 export function CodeViewer({ blueprint }: CodeViewerProps) {
     const [isExpanded, setIsExpanded] = useState(false)
 
+    // Tu lógica original intacta
     const beforeCode = blueprint?.original_code || fallbackBeforeCode
 
     const detectLanguage = (code: string): string => {
@@ -61,31 +89,32 @@ export function CodeViewer({ blueprint }: CodeViewerProps) {
     const detectedLang = detectLanguage(beforeCode)
     const beforeLines = beforeCode.split("\n")
 
-    const renderCodeSide = (
-        lines: string[],
-        textSize: string = "text-xs",
-        lineSpacing: string = "leading-5"
-    ) => {
-        const gutterBg = 'bg-destructive/5'
-
-        return (
-            <div className={`flex ${textSize} overflow-auto flex-1`}>
-                <div className={`flex flex-col ${gutterBg} text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none sticky left-0 shrink-0`}>
-                    {lines.map((_, i) => (
-                        <span key={i} className={`${lineSpacing} text-right min-w-[2.5rem]`}>
-                            {i + 1}
-                        </span>
+    // Lado legacy (rojo)
+    const renderBeforeSide = (maxHeight: string = "max-h-[280px]") => (
+        <div className="rounded-lg overflow-hidden border border-destructive/30 flex-1">
+            <div className="bg-destructive/10 px-3 py-1.5 border-b border-destructive/30 flex items-center justify-between">
+                <span className="text-xs font-medium text-destructive">Legacy Code</span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-orange-500/15 text-orange-400 text-xs font-semibold">
+                    {detectedLang}
+                </span>
+            </div>
+            {/* ← Un solo contenedor con overflow-auto, quitamos el div intermedio */}
+            <div className={`flex text-xs ${maxHeight} overflow-auto bg-secondary/30`}>
+                <div className="flex flex-col bg-destructive/5 text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none sticky left-0 shrink-0">
+                    {beforeLines.map((_, i) => (
+                        <span key={i} className="leading-5 text-right min-w-[2.5rem]">{i + 1}</span>
                     ))}
                 </div>
-
-                <pre className="py-2 px-3 overflow-x-auto flex-1">
-                    <code className={`${textSize} ${lineSpacing} font-mono whitespace-pre`}>
-                        {lines.map((line, i) => (
+                <pre className="py-2 px-3 text-muted-foreground flex-1">
+                    <code className="text-xs leading-5 font-mono">
+                        {beforeLines.map((line, i) => (
                             <div
                                 key={i}
-                                className={`${lineSpacing} ${line.includes("mysql_") || line.includes("password") || line.includes("cursor.execute") || line.includes("f\"")
+                                className={`leading-5 ${line.includes("mysql_") || line.includes("password") ||
+                                        line.includes("cursor.execute") || line.includes("f\"") ||
+                                        line.includes("$userId")
                                         ? "bg-destructive/20 text-destructive -mx-3 px-3"
-                                        : "text-muted-foreground"
+                                        : ""
                                     }`}
                             >
                                 {line || " "}
@@ -94,59 +123,41 @@ export function CodeViewer({ blueprint }: CodeViewerProps) {
                     </code>
                 </pre>
             </div>
-        )
-    }
+        </div>
+    )
 
     return (
         <>
             <Card className="bg-card border-border">
                 <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-foreground">
-                        Original Legacy Code
+                    <CardTitle className="text-sm font-bold text-foreground">
+                        Before and After Code Viewer
                     </CardTitle>
-
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsExpanded(true)}>
                         <Maximize2 className="h-4 w-4" />
                     </Button>
                 </CardHeader>
 
                 <CardContent>
-                    <div className="flex items-center gap-3 px-4 py-2 border border-border rounded-t-lg bg-primary/5 border-b-0 shrink-0 flex-wrap">
-                        <span className="text-xs font-medium text-muted-foreground mr-1">Detected Source:</span>
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-orange-500/15 text-orange-400 text-xs font-semibold">
-                            {detectedLang}
-                        </span>
-                    </div>
-
-                    <div className="border border-border rounded-b-lg overflow-hidden flex flex-col">
-                        <div className="bg-secondary/30 h-[280px] flex flex-col overflow-hidden">
-                            {renderCodeSide(beforeLines)}
-                        </div>
+                    <div className="grid grid-cols-1 gap-3">
+                        {renderBeforeSide()}
                     </div>
                 </CardContent>
             </Card>
 
+            {/* Modal pantalla completa */}
             {isExpanded && (
                 <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm p-8">
                     <div className="h-full flex flex-col">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-2xl font-semibold text-foreground">Original Legacy Code</h2>
+                            <h2 className="text-2xl font-semibold text-foreground">Before and After Code Viewer</h2>
                             <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)}>
                                 <X className="h-6 w-6" />
                             </Button>
                         </div>
 
-                        <div className="flex items-center gap-3 px-4 py-2 border border-border rounded-t-lg bg-primary/5 border-b-0 shrink-0 flex-wrap mt-2">
-                            <span className="text-xs font-medium text-muted-foreground mr-1">Detected Source:</span>
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-orange-500/15 text-orange-400 text-xs font-semibold">
-                                {detectedLang}
-                            </span>
-                        </div>
-
-                        <div className="flex-1 border border-border rounded-b-lg overflow-hidden flex flex-col">
-                            <div className="bg-secondary/30 flex-1 flex flex-col overflow-hidden">
-                                {renderCodeSide(beforeLines, 'text-sm', 'leading-6')}
-                            </div>
+                        <div className="flex-1 flex flex-col gap-3 overflow-hidden">
+                            {renderBeforeSide("max-h-full")}
                         </div>
                     </div>
                 </div>

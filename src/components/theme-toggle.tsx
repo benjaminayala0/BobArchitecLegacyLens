@@ -1,17 +1,16 @@
 "use client"
 
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/theme-provider"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Monitor, Moon, Sun } from "lucide-react"
+import { Moon, Sun } from "lucide-react"
 
 export function ThemeToggle({ className }: { className?: string }) {
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         setMounted(true)
     }, [])
 
@@ -29,7 +28,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     }
 
     if (!mounted) {
-        return <Button variant="outline" size="icon" className={cn("rounded-full h-10 w-10", className)} disabled={true} />
+        return <Button variant="outline" size="icon" className={cn("rounded-full h-10 w-10", className)} disabled />
     }
 
     return (
