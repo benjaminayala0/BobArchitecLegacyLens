@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { CheckCircle2, Circle, Loader2 } from "lucide-react"
@@ -12,76 +12,66 @@ interface AnalysisStep {
 }
 
 interface AnalysisPanelProps {
-    isAnalyzing?: boolean
-    onComplete?: () => void
+    isAnalyzing: boolean
 }
 
 const initialSteps: AnalysisStep[] = [
     { id: "parse", label: "Parsing source files...", status: "pending" },
-    { id: "detect", label: "Detecting Java patterns", status: "pending" },
-    { id: "sql", label: "Mapping SQL dependencies", status: "pending" },
+    { id: "detect", label: "Detecting patterns and structures", status: "pending" },
+    { id: "sql", label: "Mapping data dependencies", status: "pending" },
     { id: "business", label: "Extracting business logic", status: "pending" },
     { id: "generate", label: "Generating modern architecture", status: "pending" },
 ]
 
-export function AnalysisPanel({ isAnalyzing = true, onComplete }: AnalysisPanelProps) {
+export function AnalysisPanel({ isAnalyzing }: AnalysisPanelProps) {
     const [steps, setSteps] = useState<AnalysisStep[]>(initialSteps)
-    const [progress, setProgress] = useState(0)
-    const [currentLine, setCurrentLine] = useState(1)
+    const [currentLine, setCurrentLine] = useState(0)
     const [scanningText, setScanningText] = useState("Initializing...")
 
     const scanningLines = [
-        "Reading LegacyOrderService.java...",
-        "Found: public void processOrder()",
-        "Detected: JDBC connection pattern",
-        "Mapping: SELECT * FROM orders",
-        "Found: Legacy DAO implementation",
-        "Analyzing: CustomerRepository.java",
-        "Detected: Singleton pattern",
-        "Mapping: JOIN customers ON...",
-        "Found: Business rule validation",
-        "Generating: Clean Architecture layers",
+        "Reading legacy code structure...",
+        "Analyzing code patterns...",
+        "Detecting database operations...",
+        "Mapping entity relationships...",
+        "Identifying business rules...",
+        "Extracting API endpoints...",
+        "Analyzing dependencies...",
+        "Generating entity models...",
+        "Creating folder structure...",
+        "Finalizing blueprint...",
     ]
 
-    // Memoize the completion callback to avoid re-creating it
-    const handleComplete = useCallback(() => {
-        if (onComplete) {
-            // Use setTimeout to defer the state update to the next tick
-            setTimeout(() => {
-                onComplete()
-            }, 0)
-        }
-    }, [onComplete])
-
     useEffect(() => {
-        if (!isAnalyzing) return
+        if (!isAnalyzing) {
+            // Reset state when not analyzing
+            setSteps(initialSteps)
+            setCurrentLine(0)
+            setScanningText("Initializing...")
+            return
+        }
 
+        // Animate scanning text
         const textInterval = setInterval(() => {
-            setCurrentLine((prev) => (prev + 1) % scanningLines.length)
-            setScanningText(scanningLines[currentLine])
-        }, 800)
-
-        const progressInterval = setInterval(() => {
-            setProgress((prev) => {
-                if (prev >= 100) {
-                    clearInterval(progressInterval)
-                    handleComplete()
-                    return 100
-                }
-                return prev + 2
+            setCurrentLine((prev) => {
+                const next = (prev + 1) % scanningLines.length
+                setScanningText(scanningLines[next])
+                return next
             })
-        }, 150)
+        }, 1200)
 
+        // Animate steps progression
         const stepInterval = setInterval(() => {
             setSteps((prevSteps) => {
                 const runningIndex = prevSteps.findIndex((s) => s.status === "running")
                 const pendingIndex = prevSteps.findIndex((s) => s.status === "pending")
 
                 if (runningIndex === -1 && pendingIndex !== -1) {
+                    // Start first pending step
                     return prevSteps.map((s, i) =>
                         i === pendingIndex ? { ...s, status: "running" as const } : s
                     )
-                } else if (runningIndex !== -1) {
+                } else if (runningIndex !== -1 && runningIndex < prevSteps.length - 1) {
+                    // Complete current and start next
                     return prevSteps.map((s, i) => {
                         if (i === runningIndex) return { ...s, status: "completed" as const }
                         if (i === runningIndex + 1 && s.status === "pending")
@@ -91,28 +81,33 @@ export function AnalysisPanel({ isAnalyzing = true, onComplete }: AnalysisPanelP
                 }
                 return prevSteps
             })
-        }, 1500)
+        }, 2000)
 
         return () => {
             clearInterval(textInterval)
-            clearInterval(progressInterval)
             clearInterval(stepInterval)
         }
-    }, [isAnalyzing, currentLine, handleComplete])
+    }, [isAnalyzing])
 
     const completedSteps = steps.filter((s) => s.status === "completed").length
-    const estimatedTime = Math.max(0, Math.ceil((steps.length - completedSteps) * 0.5))
+    const progressPercentage = Math.round((completedSteps / steps.length) * 100)
 
     return (
         <Card className="bg-card border-border overflow-hidden">
             <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-semibold flex items-center gap-3 text-foreground">
                     <div className="relative flex items-center justify-center">
-                        <div className="h-3 w-3 rounded-full bg-primary animate-pulse" />
-                        <div className="absolute h-3 w-3 rounded-full bg-primary animate-ping" />
+                        {completedSteps === steps.length ? (
+                            <CheckCircle2 className="h-4 w-4 text-primary" />
+                        ) : (
+                            <>
+                                <div className="h-3 w-3 rounded-full bg-primary animate-pulse" />
+                                <div className="absolute h-3 w-3 rounded-full bg-primary animate-ping" />
+                            </>
+                        )}
                     </div>
 
-                    IBM Bob Analyzing...
+                    {completedSteps === steps.length ? "✅ Analysis Complete!" : "IBM Bob Analyzing..."}
                 </CardTitle>
             </CardHeader>
 
@@ -189,13 +184,13 @@ export function AnalysisPanel({ isAnalyzing = true, onComplete }: AnalysisPanelP
                 <div className="space-y-2 pt-2">
                     <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">
-                            Estimated completion: {estimatedTime > 0 ? `${estimatedTime} minutes` : "Almost done..."}
+                            {isAnalyzing ? "Analyzing with DeepSeek AI..." : "Analysis complete"}
                         </span>
 
-                        <span className="text-primary font-medium">{Math.round(progress)}%</span>
+                        <span className="text-primary font-medium">{progressPercentage}%</span>
                     </div>
 
-                    <Progress value={progress} className="h-2" />
+                    <Progress value={progressPercentage} className="h-2" />
                 </div>
             </CardContent>
         </Card>

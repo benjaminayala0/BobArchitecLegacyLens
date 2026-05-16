@@ -44,14 +44,26 @@ export function ApiContract({ blueprint }: ApiContractProps) {
         const lines = markdown.split('\n')
 
         for (let i = 0; i < lines.length; i++) {
-            const line = lines[i]
-            const match = line.match(/^-\s+\*\*(\w+)\*\*\s+`([^`]+)`\s+-\s+(.+)$/)
+            const line = lines[i].trim()
+            
+            // Match patterns like: ### GET /api/users
+            const match = line.match(/^###\s+(GET|POST|PUT|DELETE|PATCH)\s+(.+)$/)
             if (match) {
-                const [, method, endpoint, description] = match
+                const [, method, endpoint] = match
+                // Get description from next line if it starts with **Description:**
+                let description = ''
+                if (i + 2 < lines.length) {
+                    const descLine = lines[i + 2].trim()
+                    const descMatch = descLine.match(/^\*\*Description:\*\*\s+(.+)$/)
+                    if (descMatch) {
+                        description = descMatch[1]
+                    }
+                }
+                
                 endpoints.push({
                     method: method as Endpoint['method'],
-                    endpoint,
-                    description
+                    endpoint: endpoint.trim(),
+                    description: description || `${method} operation for ${endpoint}`
                 })
             }
         }

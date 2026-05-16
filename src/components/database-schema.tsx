@@ -77,7 +77,7 @@ export function DatabaseSchema({ blueprint }: DatabaseSchemaProps) {
             </CardHeader>
 
             <CardContent>
-                <div className="bg-secondary/30 rounded-lg overflow-hidden max-h-[280px] overflow-auto">
+                <div className="bg-secondary/30 rounded-lg max-h-[280px] overflow-y-auto overflow-x-hidden">
                     <pre className="p-3 text-[10px] leading-4 font-mono">
                         <code>
                             {schemaSQL.split("\n").map((line, i) => (

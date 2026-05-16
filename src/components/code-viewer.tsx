@@ -80,7 +80,60 @@ export class OrderService {
 export function CodeViewer({ blueprint }: CodeViewerProps) {
     // Use the original code from blueprint if available, otherwise use fallback
     const beforeCode = blueprint?.original_code || fallbackBeforeCode
-    const afterCode = fallbackAfterCode
+    
+    // Generate modernized code based on the first entity if available
+    const generateModernCode = (): string => {
+        if (!blueprint || !blueprint.entities || blueprint.entities.length === 0) {
+            return fallbackAfterCode
+        }
+
+        const firstEntity = blueprint.entities[0]
+        const entityName = firstEntity.name
+        const tableName = firstEntity.table
+
+        return `// Modern TypeScript - ${entityName}Service.ts
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ${entityName} } from './entities/${entityName.toLowerCase()}.entity';
+import { Create${entityName}Dto } from './dto/create-${entityName.toLowerCase()}.dto';
+
+@Injectable()
+export class ${entityName}Service {
+  constructor(
+    @InjectRepository(${entityName})
+    private ${entityName.toLowerCase()}Repository: Repository<${entityName}>,
+  ) {}
+
+  async findAll(): Promise<${entityName}[]> {
+    return this.${entityName.toLowerCase()}Repository.find({
+      relations: ['${blueprint.relationships.filter(r => r.from === entityName).map(r => r.to.toLowerCase()).join("', '")}'],
+    });
+  }
+
+  async create(create${entityName}Dto: Create${entityName}Dto): Promise<${entityName}> {
+    const ${entityName.toLowerCase()} = this.${entityName.toLowerCase()}Repository.create(create${entityName}Dto);
+    return this.${entityName.toLowerCase()}Repository.save(${entityName.toLowerCase()});
+  }
+
+  async findOne(id: string): Promise<${entityName} | null> {
+    return this.${entityName.toLowerCase()}Repository.findOne({
+      where: { id },
+    });
+  }
+
+  async update(id: string, update${entityName}Dto: Partial<Create${entityName}Dto>): Promise<${entityName}> {
+    await this.${entityName.toLowerCase()}Repository.update(id, update${entityName}Dto);
+    return this.findOne(id);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.${entityName.toLowerCase()}Repository.delete(id);
+  }
+}`
+    }
+
+    const afterCode = generateModernCode()
 
     return (
         <Card className="bg-card border-border">
@@ -103,21 +156,21 @@ export function CodeViewer({ blueprint }: CodeViewerProps) {
                         </div>
 
                         <div className="bg-secondary/30 overflow-hidden">
-                            <div className="flex text-xs max-h-[280px] overflow-auto">
-                                <div className="flex flex-col bg-destructive/5 text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none">
+                            <div className="flex text-xs h-[280px] overflow-auto">
+                                <div className="flex flex-col bg-destructive/5 text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none sticky left-0">
                                     {beforeCode.split("\n").map((_, i) => (
-                                        <span key={i} className="leading-5 text-right">
+                                        <span key={i} className="leading-5 text-right min-w-[2rem]">
                                             {i + 1}
                                         </span>
                                     ))}
                                 </div>
 
                                 <pre className="py-2 px-3 text-muted-foreground overflow-x-auto flex-1">
-                                    <code className="text-xs leading-5 font-mono">
+                                    <code className="text-xs leading-5 font-mono whitespace-pre">
                                         {beforeCode.split("\n").map((line, i) => (
                                             <div
                                                 key={i}
-                                                className={`leading-5 ${line.includes("mysql_") || line.includes("password") || line.includes("$userId")
+                                                className={`leading-5 ${line.includes("mysql_") || line.includes("password") || line.includes("cursor.execute") || line.includes("f\"")
                                                     ? "bg-destructive/20 text-destructive -mx-3 px-3"
                                                     : ""
                                                     }`}
@@ -138,23 +191,23 @@ export function CodeViewer({ blueprint }: CodeViewerProps) {
                         </div>
 
                         <div className="bg-secondary/30 overflow-hidden">
-                            <div className="flex text-xs max-h-[280px] overflow-auto">
-                                <div className="flex flex-col bg-primary/5 text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none">
+                            <div className="flex text-xs h-[280px] overflow-auto">
+                                <div className="flex flex-col bg-primary/5 text-muted-foreground/50 font-mono py-2 px-2 border-r border-border select-none sticky left-0">
                                     {afterCode.split("\n").map((_, i) => (
-                                        <span key={i} className="leading-5 text-right">
+                                        <span key={i} className="leading-5 text-right min-w-[2rem]">
                                             {i + 1}
                                         </span>
                                     ))}
                                 </div>
 
                                 <pre className="py-2 px-3 overflow-x-auto flex-1">
-                                    <code className="text-xs leading-5 font-mono">
+                                    <code className="text-xs leading-5 font-mono whitespace-pre">
                                         {afterCode.split("\n").map((line, i) => (
                                             <div
                                                 key={i}
                                                 className={`leading-5 ${line.includes("@Injectable") || line.includes("@InjectRepository") || line.includes("async")
                                                     ? "text-primary"
-                                                    : line.includes("import")
+                                                    : line.includes("import") || line.includes("export")
                                                         ? "text-chart-2"
                                                         : "text-foreground/80"
                                                     }`}

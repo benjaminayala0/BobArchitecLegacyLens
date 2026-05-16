@@ -90,12 +90,17 @@ Return ONLY the JSON object.`
  */
 export async function POST(req: Request) {
   try {
+    console.log('[API] Received analysis request')
+    
     // Parse the incoming request body
     const body = await req.json()
     const { code } = body
 
+    console.log('[API] Code length:', code?.length || 0)
+
     // Validate input
     if (!code || typeof code !== 'string') {
+      console.error('[API] Invalid code input')
       return NextResponse.json(
         { error: 'Invalid request: code field is required and must be a string' },
         { status: 400 }
@@ -104,12 +109,14 @@ export async function POST(req: Request) {
 
     // Validate API key
     if (!process.env.OPENROUTER_API_KEY) {
-      console.error('OPENROUTER_API_KEY is not configured')
+      console.error('[API] OPENROUTER_API_KEY is not configured')
       return NextResponse.json(
         { error: 'API configuration error: OpenRouter API key is missing' },
         { status: 500 }
       )
     }
+
+    console.log('[API] Calling DeepSeek via OpenRouter...')
 
     // Call DeepSeek through OpenRouter
     const stream = await openrouter.chat.send({
@@ -132,6 +139,8 @@ export async function POST(req: Request) {
     // Collect the streamed response
     let response = ''
 
+    console.log('[API] Streaming response from DeepSeek...')
+    
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content
       if (content) {
@@ -139,25 +148,31 @@ export async function POST(req: Request) {
       }
     }
 
+    console.log('[API] Stream complete. Response length:', response.length)
+
     // Clean up the response - remove markdown code blocks if present
     let cleanedResponse = response.trim()
     
     // Remove markdown code blocks (```json ... ``` or ``` ... ```)
     if (cleanedResponse.startsWith('```')) {
+      console.log('[API] Removing markdown code blocks')
       cleanedResponse = cleanedResponse.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '')
     }
 
     // Parse the JSON response
     let analysis: BobBlueprint
     try {
+      console.log('[API] Parsing JSON response...')
       analysis = JSON.parse(cleanedResponse)
+      console.log('[API] Successfully parsed. Entities:', analysis.entities?.length || 0)
     } catch (parseError) {
-      console.error('Failed to parse DeepSeek response:', parseError)
-      console.error('Raw response:', response)
+      console.error('[API] Failed to parse DeepSeek response:', parseError)
+      console.error('[API] Raw response preview:', response.substring(0, 500))
       return NextResponse.json(
-        { 
+        {
           error: 'Failed to parse AI response as JSON',
-          details: parseError instanceof Error ? parseError.message : 'Unknown parsing error'
+          details: parseError instanceof Error ? parseError.message : 'Unknown parsing error',
+          preview: response.substring(0, 200)
         },
         { status: 500 }
       )
