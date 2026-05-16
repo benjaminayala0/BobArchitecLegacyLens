@@ -11,64 +11,22 @@ import { DatabaseSchema } from "@/components/database-schema"
 import { ApiContract } from "@/components/api-contract"
 import { Button } from "@/components/ui/button"
 import { Download, ArrowRight, Sparkles } from "lucide-react"
-import { downloadZip, adaptJsonToFolderNodes, type BobBlueprint } from "@/lib"
 
 export default function BlueprintAI() {
   const [currentView, setCurrentView] = useState<"analyze" | "blueprint">("analyze")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
-  const [blueprintData, setBlueprintData] = useState<BobBlueprint | null>(null)
 
-  const handleUpload = async (files: FileList) => {
+  const handleUpload = (files: FileList) => {
     console.log("Files uploaded:", files)
     setIsAnalyzing(true)
     setAnalysisComplete(false)
-
-    // Read the first file
-    const file = files[0]
-    const code = await file.text()
-    await analyzeCode(code)
   }
 
-  const handleCodePaste = async (code: string) => {
+  const handleCodePaste = (code: string) => {
     console.log("Code pasted:", code.substring(0, 100))
     setIsAnalyzing(true)
     setAnalysisComplete(false)
-    await analyzeCode(code)
-  }
-
-  const analyzeCode = async (code: string) => {
-    try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Analysis failed')
-      }
-
-      const data: BobBlueprint = await response.json()
-      setBlueprintData(data)
-      setAnalysisComplete(true)
-    } catch (error) {
-      console.error('Error analyzing code:', error)
-      setIsAnalyzing(false)
-    }
-  }
-
-  const handleExportZip = async () => {
-    if (!blueprintData) return
-
-    try {
-      const files = adaptJsonToFolderNodes(blueprintData.suggested_folder_structure)
-      await downloadZip(files, 'modernized-scaffolding.zip')
-    } catch (error) {
-      console.error('Error exporting ZIP:', error)
-    }
   }
 
   const handleAnalysisComplete = () => {
@@ -80,6 +38,7 @@ export default function BlueprintAI() {
       <Header />
 
       <main className="p-6">
+        {/* View Toggle */}
         <div className="flex gap-3 mb-6">
           <Button
             variant={currentView === "analyze" ? "default" : "outline"}
@@ -107,7 +66,6 @@ export default function BlueprintAI() {
               <h1 className="text-2xl font-bold text-foreground">
                 1. Smart Analysis Dashboard
               </h1>
-
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
 
@@ -134,6 +92,7 @@ export default function BlueprintAI() {
             </div>
           </div>
         ) : (
+          /* The Architect's Blueprint (Output) */
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -144,35 +103,37 @@ export default function BlueprintAI() {
                 <Sparkles className="h-5 w-5 text-primary" />
               </div>
 
-              <Button
-                className="gap-2 bg-primary hover:bg-primary/90"
-                onClick={handleExportZip}
-                disabled={!blueprintData}
-              >
+              <Button className="gap-2 bg-primary hover:bg-primary/90">
                 <Download className="h-4 w-4" />
                 Export Modernized Scaffolding ZIP
               </Button>
             </div>
 
+            {/* Bento Grid Layout */}
             <div className="grid grid-cols-12 gap-4">
+              {/* Left Column - ER Diagram */}
               <div className="col-span-12 lg:col-span-5">
-                <ERDiagram blueprint={blueprintData} />
+                <ERDiagram />
               </div>
 
+              {/* Middle Column - Folder Scaffolding */}
               <div className="col-span-12 lg:col-span-4">
-                <FolderScaffolding blueprint={blueprintData} />
+                <FolderScaffolding />
               </div>
 
+              {/* Right Column - Database Schema */}
               <div className="col-span-12 lg:col-span-3">
-                <DatabaseSchema blueprint={blueprintData} />
+                <DatabaseSchema />
               </div>
 
+              {/* Bottom Left - Code Viewer */}
               <div className="col-span-12 lg:col-span-8">
-                <CodeViewer blueprint={blueprintData} />
+                <CodeViewer />
               </div>
 
+              {/* Bottom Right - API Contract */}
               <div className="col-span-12 lg:col-span-4">
-                <ApiContract blueprint={blueprintData} />
+                <ApiContract />
               </div>
             </div>
           </div>

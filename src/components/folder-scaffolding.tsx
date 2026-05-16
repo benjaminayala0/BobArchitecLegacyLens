@@ -4,11 +4,6 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronRight, ChevronDown, Folder, FolderOpen, FileCode, FileText, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { type BobBlueprint, type FolderStructure } from "@/lib"
-
-interface FolderScaffoldingProps {
-    blueprint: BobBlueprint | null
-}
 
 interface TreeNode {
     name: string
@@ -17,7 +12,7 @@ interface TreeNode {
     fileType?: "ts" | "json" | "config" | "md"
 }
 
-const fallbackFolderStructure: TreeNode = {
+const folderStructure: TreeNode = {
     name: "Clean Architecture",
     type: "folder",
     children: [
@@ -137,7 +132,7 @@ function TreeItem({ node, depth = 0 }: { node: TreeNode; depth?: number }) {
 
                 {node.type === "file" && <span className="w-3" />}
                 {getFileIcon()}
-
+                
                 <span className={`text-xs ${node.type === "folder" ? "text-foreground font-medium" : "text-muted-foreground"}`}>
                     {node.name}
                 </span>
@@ -154,53 +149,7 @@ function TreeItem({ node, depth = 0 }: { node: TreeNode; depth?: number }) {
     )
 }
 
-// Convert FolderStructure to TreeNode format
-function convertToTreeNode(name: string, structure: FolderStructure | string[]): TreeNode {
-    if (Array.isArray(structure)) {
-        // It's a list of files
-        return {
-            name,
-            type: "folder",
-            children: structure.map(fileName => ({
-                name: fileName,
-                type: "file" as const,
-                fileType: getFileType(fileName)
-            }))
-        }
-    } else {
-        // It's a nested folder structure
-        return {
-            name,
-            type: "folder",
-            children: Object.entries(structure).map(([key, value]) =>
-                convertToTreeNode(key, value)
-            )
-        }
-    }
-}
-
-function getFileType(fileName: string): TreeNode['fileType'] {
-    if (fileName.endsWith('.ts') || fileName.endsWith('.tsx') || fileName.endsWith('.js') || fileName.endsWith('.jsx')) {
-        return 'ts'
-    }
-    if (fileName.endsWith('.json')) {
-        return 'json'
-    }
-    if (fileName.endsWith('.sql') || fileName.endsWith('.config.ts') || fileName.endsWith('.config.js')) {
-        return 'config'
-    }
-    if (fileName.endsWith('.md')) {
-        return 'md'
-    }
-    return undefined
-}
-
-export function FolderScaffolding({ blueprint }: FolderScaffoldingProps) {
-    // Convert blueprint folder structure to TreeNode format
-    const folderStructure = blueprint
-        ? convertToTreeNode("Modernized Architecture", blueprint.suggested_folder_structure)
-        : fallbackFolderStructure
-
+export function FolderScaffolding() {
     return (
         <Card className="bg-card border-border h-full">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
