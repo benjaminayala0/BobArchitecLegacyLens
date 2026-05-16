@@ -94,26 +94,26 @@ export type {
   RelationshipType,
   FolderStructure,
   BobBlueprint 
-} from '@/types/blueprint';
+} from '@/types/blueprint'
 
 // Export validation utilities
 export { 
   validateBlueprint, 
   sanitizeSqlIdentifier, 
   isValidSqlIdentifier 
-} from '@/types/blueprint';
+} from '@/types/blueprint'
 
 // Export Mermaid diagram generator
-export { generateMermaidERDiagram } from './mermaidGenerator';
+export { generateMermaidERDiagram } from './mermaidGenerator'
 
 // Export SQL schema generator
-export { generateSqlSchema } from './sqlGenerator';
+export { generateSqlSchema } from './sqlGenerator'
 
 // Export API contract generator
-export { generateApiContract } from './apiContractGenerator';
+export { generateApiContract } from './apiContractGenerator'
 
 // Export ZIP downloader utilities
-export type { FolderNode } from './zipDownloader';
-export { downloadZip, adaptJsonToFolderNodes } from './zipDownloader';
+export type { FolderNode } from './zipDownloader'
+export { downloadZip, adaptJsonToFolderNodes } from './zipDownloader'
 
 // Made with Bob

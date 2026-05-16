@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { type BobBlueprint, type FolderStructure } from "@/lib"
 
 interface FolderScaffoldingProps {
-  blueprint: BobBlueprint | null
+    blueprint: BobBlueprint | null
 }
 
 interface TreeNode {
@@ -137,7 +137,7 @@ function TreeItem({ node, depth = 0 }: { node: TreeNode; depth?: number }) {
 
                 {node.type === "file" && <span className="w-3" />}
                 {getFileIcon()}
-                
+
                 <span className={`text-xs ${node.type === "folder" ? "text-foreground font-medium" : "text-muted-foreground"}`}>
                     {node.name}
                 </span>

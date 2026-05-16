@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { generateApiContract, type BobBlueprint } from "@/lib"
 
 interface ApiContractProps {
-  blueprint: BobBlueprint | null
+    blueprint: BobBlueprint | null
 }
 
 interface Endpoint {
@@ -37,17 +37,14 @@ const methodColors: Record<string, string> = {
 }
 
 export function ApiContract({ blueprint }: ApiContractProps) {
-    // If blueprint is available, generate markdown and parse it
     const apiMarkdown = blueprint ? generateApiContract(blueprint) : null
 
-    // Parse markdown to extract endpoints (simple parsing for display)
     const parseEndpoints = (markdown: string): Endpoint[] => {
         const endpoints: Endpoint[] = []
         const lines = markdown.split('\n')
-        
+
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i]
-            // Look for lines like: - **GET** `/api/v1/users` - Description
             const match = line.match(/^-\s+\*\*(\w+)\*\*\s+`([^`]+)`\s+-\s+(.+)$/)
             if (match) {
                 const [, method, endpoint, description] = match
@@ -58,7 +55,7 @@ export function ApiContract({ blueprint }: ApiContractProps) {
                 })
             }
         }
-        
+
         return endpoints.length > 0 ? endpoints : fallbackEndpoints
     }
 

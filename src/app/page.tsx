@@ -23,7 +23,7 @@ export default function BlueprintAI() {
     console.log("Files uploaded:", files)
     setIsAnalyzing(true)
     setAnalysisComplete(false)
-    
+
     // Read the first file
     const file = files[0]
     const code = await file.text()
@@ -80,7 +80,6 @@ export default function BlueprintAI() {
       <Header />
 
       <main className="p-6">
-        {/* View Toggle */}
         <div className="flex gap-3 mb-6">
           <Button
             variant={currentView === "analyze" ? "default" : "outline"}
@@ -108,6 +107,7 @@ export default function BlueprintAI() {
               <h1 className="text-2xl font-bold text-foreground">
                 1. Smart Analysis Dashboard
               </h1>
+
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
 
@@ -134,7 +134,6 @@ export default function BlueprintAI() {
             </div>
           </div>
         ) : (
-          /* The Architect's Blueprint (Output) */
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -155,29 +154,23 @@ export default function BlueprintAI() {
               </Button>
             </div>
 
-            {/* Bento Grid Layout */}
             <div className="grid grid-cols-12 gap-4">
-              {/* Left Column - ER Diagram */}
               <div className="col-span-12 lg:col-span-5">
                 <ERDiagram blueprint={blueprintData} />
               </div>
 
-              {/* Middle Column - Folder Scaffolding */}
               <div className="col-span-12 lg:col-span-4">
                 <FolderScaffolding blueprint={blueprintData} />
               </div>
 
-              {/* Right Column - Database Schema */}
               <div className="col-span-12 lg:col-span-3">
                 <DatabaseSchema blueprint={blueprintData} />
               </div>
 
-              {/* Bottom Left - Code Viewer */}
               <div className="col-span-12 lg:col-span-8">
                 <CodeViewer blueprint={blueprintData} />
               </div>
 
-              {/* Bottom Right - API Contract */}
               <div className="col-span-12 lg:col-span-4">
                 <ApiContract blueprint={blueprintData} />
               </div>

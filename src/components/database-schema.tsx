@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { generateSqlSchema, type BobBlueprint } from "@/lib"
 
 interface DatabaseSchemaProps {
-  blueprint: BobBlueprint | null
+    blueprint: BobBlueprint | null
 }
 
 const fallbackSQL = `-- Generated PostgreSQL Schema
