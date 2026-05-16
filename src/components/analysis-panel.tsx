@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { CheckCircle2, Circle, Loader2 } from "lucide-react"
@@ -43,6 +43,16 @@ export function AnalysisPanel({ isAnalyzing = true, onComplete }: AnalysisPanelP
         "Generating: Clean Architecture layers",
     ]
 
+    // Memoize the completion callback to avoid re-creating it
+    const handleComplete = useCallback(() => {
+        if (onComplete) {
+            // Use setTimeout to defer the state update to the next tick
+            setTimeout(() => {
+                onComplete()
+            }, 0)
+        }
+    }, [onComplete])
+
     useEffect(() => {
         if (!isAnalyzing) return
 
@@ -55,7 +65,7 @@ export function AnalysisPanel({ isAnalyzing = true, onComplete }: AnalysisPanelP
             setProgress((prev) => {
                 if (prev >= 100) {
                     clearInterval(progressInterval)
-                    onComplete?.()
+                    handleComplete()
                     return 100
                 }
                 return prev + 2
@@ -88,7 +98,7 @@ export function AnalysisPanel({ isAnalyzing = true, onComplete }: AnalysisPanelP
             clearInterval(progressInterval)
             clearInterval(stepInterval)
         }
-    }, [isAnalyzing, currentLine, onComplete])
+    }, [isAnalyzing, currentLine, handleComplete])
 
     const completedSteps = steps.filter((s) => s.status === "completed").length
     const estimatedTime = Math.max(0, Math.ceil((steps.length - completedSteps) * 0.5))

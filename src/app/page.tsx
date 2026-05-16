@@ -18,6 +18,7 @@ export default function BlueprintAI() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [blueprintData, setBlueprintData] = useState<BobBlueprint | null>(null)
+  const [originalCode, setOriginalCode] = useState<string>("")
 
   const handleUpload = async (files: FileList) => {
     console.log("Files uploaded:", files)
@@ -39,6 +40,9 @@ export default function BlueprintAI() {
 
   const analyzeCode = async (code: string) => {
     try {
+      // Store the original code
+      setOriginalCode(code)
+      
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
@@ -52,7 +56,8 @@ export default function BlueprintAI() {
       }
 
       const data: BobBlueprint = await response.json()
-      setBlueprintData(data)
+      // Add original code to blueprint data
+      setBlueprintData({ ...data, original_code: code })
       setAnalysisComplete(true)
     } catch (error) {
       console.error('Error analyzing code:', error)

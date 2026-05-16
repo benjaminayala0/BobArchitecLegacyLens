@@ -56,6 +56,7 @@ export interface BobBlueprint {
   entities: Entity[];
   relationships: Relationship[];
   suggested_folder_structure: FolderStructure;
+  original_code?: string;
 }
 
 /**

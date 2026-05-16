@@ -78,9 +78,8 @@ export class OrderService {
 }`
 
 export function CodeViewer({ blueprint }: CodeViewerProps) {
-    // For now, we'll use the fallback code since we don't have original code in the blueprint
-    // In a real implementation, you might want to store the original code and generate modernized code
-    const beforeCode = fallbackBeforeCode
+    // Use the original code from blueprint if available, otherwise use fallback
+    const beforeCode = blueprint?.original_code || fallbackBeforeCode
     const afterCode = fallbackAfterCode
 
     return (

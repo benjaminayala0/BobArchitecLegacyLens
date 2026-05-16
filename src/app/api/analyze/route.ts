@@ -1,16 +1,92 @@
 /**
- * Mock API Route - IBM Bob Analysis Endpoint
+ * API Route - DeepSeek Analysis Endpoint
  * 
- * Simulates IBM Bob's analysis of legacy code.
- * Returns a mock blueprint for hotel management system.
+ * Analyzes legacy code using DeepSeek v4 Flash through OpenRouter.
+ * Returns a blueprint with entities, relationships, and folder structure.
  */
 
 import { NextResponse } from 'next/server'
+import { OpenRouter } from '@openrouter/sdk'
 import type { BobBlueprint } from '@/types/blueprint'
 
+// Initialize OpenRouter client
+const openrouter = new OpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY || ''
+})
+
 /**
- * Mock API route that simulates IBM Bob's analysis of legacy code.
- * Waits 2.5 seconds to simulate AI processing time.
+ * System prompt that ensures DeepSeek returns valid JSON matching BobBlueprint interface
+ */
+const SYSTEM_PROMPT = `You are Bob, an expert software architect specializing in analyzing legacy code and designing modern database schemas.
+
+Your task is to analyze the provided legacy code and return ONLY a valid JSON object (no markdown, no code blocks, no explanations) that matches this exact structure:
+
+{
+  "entities": [
+    {
+      "name": "EntityName",
+      "table": "table_name",
+      "fields": [
+        {
+          "name": "field_name",
+          "type": "string|integer|decimal|boolean|date|timestamp|text",
+          "primary_key": true|false (optional),
+          "foreign_key": "referenced_table.field" (optional),
+          "auto_increment": true|false (optional),
+          "nullable": true|false (optional),
+          "unique": true|false (optional)
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "EntityName1",
+      "to": "EntityName2",
+      "type": "one-to-one|one-to-many|many-to-one|many-to-many",
+      "description": "relationship description" (optional)
+    }
+  ],
+  "suggested_folder_structure": {
+    "src": {
+      "models": ["Model1.ts", "Model2.ts"],
+      "controllers": ["Controller1.ts"],
+      "services": ["Service1.ts"],
+      "repositories": ["Repository1.ts"],
+      "routes": ["routes1.ts"],
+      "middleware": ["middleware1.ts"],
+      "utils": ["util1.ts"],
+      "config": ["config1.ts"]
+    },
+    "tests": {
+      "unit": ["test1.test.ts"],
+      "integration": ["integration1.test.ts"]
+    },
+    "docs": ["API.md", "DATABASE_SCHEMA.md"]
+  }
+}
+
+CRITICAL RULES:
+1. Return ONLY the JSON object - no markdown formatting, no code blocks, no explanations
+2. All entity names must be PascalCase (e.g., "Guest", "RoomType")
+3. All table names must be snake_case (e.g., "guests", "room_types")
+4. All field names must be snake_case (e.g., "guest_id", "first_name")
+5. Every entity must have at least one primary key field
+6. Foreign keys must reference existing tables in format "table_name.field_name"
+7. Include common fields like created_at, updated_at where appropriate
+8. Relationship types must be exactly: "one-to-one", "one-to-many", "many-to-one", or "many-to-many"
+9. The suggested_folder_structure must follow a logical MVC or layered architecture pattern
+10. Include appropriate TypeScript file extensions (.ts) in the folder structure
+
+Analyze the code carefully and identify:
+- All data entities and their attributes
+- Relationships between entities
+- A modern, scalable folder structure for the application
+
+Return ONLY the JSON object.`
+
+/**
+ * API route that analyzes legacy code using DeepSeek
  */
 export async function POST(req: Request) {
   try {
@@ -26,518 +102,106 @@ export async function POST(req: Request) {
       )
     }
 
-    // Simulate AI processing time (2.5 seconds)
-    await new Promise(resolve => setTimeout(resolve, 2500))
+    // Validate API key
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.error('OPENROUTER_API_KEY is not configured')
+      return NextResponse.json(
+        { error: 'API configuration error: OpenRouter API key is missing' },
+        { status: 500 }
+      )
+    }
 
-    // Mock IBM Bob analysis response - Hotel Management System
-    const mockAnalysis: BobBlueprint = {
-      entities: [
-        {
-          name: "Guest",
-          table: "guests",
-          fields: [
-            {
-              name: "guest_id",
-              type: "integer",
-              primary_key: true,
-              auto_increment: true
-            },
-            {
-              name: "first_name",
-              type: "string",
-              nullable: false
-            },
-            {
-              name: "last_name",
-              type: "string",
-              nullable: false
-            },
-            {
-              name: "email",
-              type: "string",
-              unique: true,
-              nullable: false
-            },
-            {
-              name: "phone",
-              type: "string"
-            },
-            {
-              name: "address",
-              type: "text"
-            },
-            {
-              name: "date_of_birth",
-              type: "date"
-            },
-            {
-              name: "loyalty_points",
-              type: "integer"
-            },
-            {
-              name: "created_at",
-              type: "timestamp",
-              nullable: false
-            }
-          ]
-        },
-        {
-          name: "Room",
-          table: "rooms",
-          fields: [
-            {
-              name: "room_id",
-              type: "integer",
-              primary_key: true,
-              auto_increment: true
-            },
-            {
-              name: "room_number",
-              type: "string",
-              unique: true,
-              nullable: false
-            },
-            {
-              name: "room_type_id",
-              type: "integer",
-              foreign_key: "room_types.room_type_id",
-              nullable: false
-            },
-            {
-              name: "floor",
-              type: "integer",
-              nullable: false
-            },
-            {
-              name: "status",
-              type: "string",
-              nullable: false
-            },
-            {
-              name: "last_maintenance",
-              type: "date"
-            }
-          ]
-        },
-        {
-          name: "RoomType",
-          table: "room_types",
-          fields: [
-            {
-              name: "room_type_id",
-              type: "integer",
-              primary_key: true,
-              auto_increment: true
-            },
-            {
-              name: "type_name",
-              type: "string",
-              nullable: false
-            },
-            {
-              name: "description",
-              type: "text"
-            },
-            {
-              name: "base_price",
-              type: "decimal",
-              nullable: false
-            },
-            {
-              name: "max_occupancy",
-              type: "integer",
-              nullable: false
-            },
-            {
-              name: "amenities",
-              type: "text"
-            }
-          ]
-        },
-        {
-          name: "Reservation",
-          table: "reservations",
-          fields: [
-            {
-              name: "reservation_id",
-              type: "integer",
-              primary_key: true,
-              auto_increment: true
-            },
-            {
-              name: "guest_id",
-              type: "integer",
-              foreign_key: "guests.guest_id",
-              nullable: false
-            },
-            {
-              name: "room_id",
-              type: "integer",
-              foreign_key: "rooms.room_id",
-              nullable: false
-            },
-            {
-              name: "check_in_date",
-              type: "date",
-              nullable: false
-            },
-            {
-              name: "check_out_date",
-              type: "date",
-              nullable: false
-            },
-            {
-              name: "number_of_guests",
-              type: "integer",
-              nullable: false
-            },
-            {
-              name: "total_price",
-              type: "decimal",
-              nullable: false
-            },
-            {
-              name: "status",
-              type: "string",
-              nullable: false
-            },
-            {
-              name: "special_requests",
-              type: "text"
-            },
-            {
-              name: "created_at",
-              type: "timestamp",
-              nullable: false
-            }
-          ]
-        },
-        {
-          name: "Payment",
-          table: "payments",
-          fields: [
-            {
-              name: "payment_id",
-              type: "integer",
-              primary_key: true,
-              auto_increment: true
-            },
-            {
-              name: "reservation_id",
-              type: "integer",
-              foreign_key: "reservations.reservation_id",
-              nullable: false
-            },
-            {
-              name: "amount",
-              type: "decimal",
-              nullable: false
-            },
-            {
-              name: "payment_method",
-              type: "string",
-              nullable: false
-            },
-            {
-              name: "payment_date",
-              type: "timestamp",
-              nullable: false
-            },
-            {
-              name: "transaction_id",
-              type: "string",
-              unique: true
-            },
-            {
-              name: "status",
-              type: "string",
-              nullable: false
-            }
-          ]
-        },
-        {
-          name: "Service",
-          table: "services",
-          fields: [
-            {
-              name: "service_id",
-              type: "integer",
-              primary_key: true,
-              auto_increment: true
-            },
-            {
-              name: "service_name",
-              type: "string",
-              nullable: false
-            },
-            {
-              name: "description",
-              type: "text"
-            },
-            {
-              name: "price",
-              type: "decimal",
-              nullable: false
-            },
-            {
-              name: "category",
-              type: "string"
-            }
-          ]
-        },
-        {
-          name: "ReservationService",
-          table: "reservation_services",
-          fields: [
-            {
-              name: "reservation_service_id",
-              type: "integer",
-              primary_key: true,
-              auto_increment: true
-            },
-            {
-              name: "reservation_id",
-              type: "integer",
-              foreign_key: "reservations.reservation_id",
-              nullable: false
-            },
-            {
-              name: "service_id",
-              type: "integer",
-              foreign_key: "services.service_id",
-              nullable: false
-            },
-            {
-              name: "quantity",
-              type: "integer",
-              nullable: false
-            },
-            {
-              name: "service_date",
-              type: "timestamp",
-              nullable: false
-            },
-            {
-              name: "total_price",
-              type: "decimal",
-              nullable: false
-            }
-          ]
-        },
-        {
-          name: "Staff",
-          table: "staff",
-          fields: [
-            {
-              name: "staff_id",
-              type: "integer",
-              primary_key: true,
-              auto_increment: true
-            },
-            {
-              name: "first_name",
-              type: "string",
-              nullable: false
-            },
-            {
-              name: "last_name",
-              type: "string",
-              nullable: false
-            },
-            {
-              name: "email",
-              type: "string",
-              unique: true,
-              nullable: false
-            },
-            {
-              name: "phone",
-              type: "string"
-            },
-            {
-              name: "position",
-              type: "string",
-              nullable: false
-            },
-            {
-              name: "hire_date",
-              type: "date",
-              nullable: false
-            },
-            {
-              name: "salary",
-              type: "decimal"
-            },
-            {
-              name: "is_active",
-              type: "boolean",
-              nullable: false
-            }
-          ]
-        }
-      ],
-      relationships: [
-        {
-          from: "Room",
-          to: "RoomType",
-          type: "many-to-one",
-          description: "belongs to"
-        },
-        {
-          from: "Reservation",
-          to: "Guest",
-          type: "many-to-one",
-          description: "made by"
-        },
-        {
-          from: "Reservation",
-          to: "Room",
-          type: "many-to-one",
-          description: "reserves"
-        },
-        {
-          from: "Payment",
-          to: "Reservation",
-          type: "many-to-one",
-          description: "pays for"
-        },
-        {
-          from: "ReservationService",
-          to: "Reservation",
-          type: "many-to-one",
-          description: "belongs to"
-        },
-        {
-          from: "ReservationService",
-          to: "Service",
-          type: "many-to-one",
-          description: "uses"
-        },
-        {
-          from: "Guest",
-          to: "Reservation",
-          type: "one-to-many",
-          description: "has"
-        },
-        {
-          from: "Room",
-          to: "Reservation",
-          type: "one-to-many",
-          description: "has"
-        },
-        {
-          from: "RoomType",
-          to: "Room",
-          type: "one-to-many",
-          description: "categorizes"
-        },
-        {
-          from: "Reservation",
-          to: "Payment",
-          type: "one-to-many",
-          description: "receives"
-        },
-        {
-          from: "Reservation",
-          to: "ReservationService",
-          type: "one-to-many",
-          description: "includes"
-        },
-        {
-          from: "Service",
-          to: "ReservationService",
-          type: "one-to-many",
-          description: "provided in"
-        }
-      ],
-      suggested_folder_structure: {
-        "src": {
-          "models": [
-            "Guest.ts",
-            "Room.ts",
-            "RoomType.ts",
-            "Reservation.ts",
-            "Payment.ts",
-            "Service.ts",
-            "ReservationService.ts",
-            "Staff.ts"
-          ],
-          "controllers": [
-            "GuestController.ts",
-            "RoomController.ts",
-            "RoomTypeController.ts",
-            "ReservationController.ts",
-            "PaymentController.ts",
-            "ServiceController.ts",
-            "StaffController.ts"
-          ],
-          "services": [
-            "GuestService.ts",
-            "RoomService.ts",
-            "ReservationService.ts",
-            "PaymentService.ts",
-            "ServiceManagementService.ts",
-            "StaffService.ts"
-          ],
-          "repositories": [
-            "GuestRepository.ts",
-            "RoomRepository.ts",
-            "RoomTypeRepository.ts",
-            "ReservationRepository.ts",
-            "PaymentRepository.ts",
-            "ServiceRepository.ts",
-            "ReservationServiceRepository.ts",
-            "StaffRepository.ts"
-          ],
-          "routes": [
-            "guestRoutes.ts",
-            "roomRoutes.ts",
-            "reservationRoutes.ts",
-            "paymentRoutes.ts",
-            "serviceRoutes.ts",
-            "staffRoutes.ts"
-          ],
-          "middleware": [
-            "authMiddleware.ts",
-            "validationMiddleware.ts",
-            "errorHandler.ts"
-          ],
-          "utils": [
-            "dateUtils.ts",
-            "priceCalculator.ts",
-            "emailService.ts",
-            "logger.ts"
-          ],
-          "config": [
-            "database.ts",
-            "environment.ts"
-          ]
-        },
-        "tests": {
-          "unit": [
-            "GuestService.test.ts",
-            "RoomService.test.ts",
-            "ReservationService.test.ts",
-            "PaymentService.test.ts"
-          ],
-          "integration": [
-            "reservationFlow.test.ts",
-            "paymentFlow.test.ts"
-          ]
-        },
-        "docs": [
-          "API.md",
-          "DATABASE_SCHEMA.md",
-          "DEPLOYMENT.md"
-        ]
+    // Call DeepSeek through OpenRouter
+    const stream = await openrouter.chat.send({
+      chatRequest: {
+        model: 'deepseek/deepseek-r1-distill-llama-70b',
+        messages: [
+          {
+            role: 'system',
+            content: SYSTEM_PROMPT
+          },
+          {
+            role: 'user',
+            content: `Analyze this legacy code and return a JSON blueprint:\n\n${code}`
+          }
+        ],
+        stream: true
+      }
+    })
+
+    // Collect the streamed response
+    let response = ''
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content
+      if (content) {
+        response += content
       }
     }
 
-    // Return the mock analysis
-    return NextResponse.json(mockAnalysis, { status: 200 })
+    // Clean up the response - remove markdown code blocks if present
+    let cleanedResponse = response.trim()
+    
+    // Remove markdown code blocks (```json ... ``` or ``` ... ```)
+    if (cleanedResponse.startsWith('```')) {
+      cleanedResponse = cleanedResponse.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '')
+    }
+
+    // Parse the JSON response
+    let analysis: BobBlueprint
+    try {
+      analysis = JSON.parse(cleanedResponse)
+    } catch (parseError) {
+      console.error('Failed to parse DeepSeek response:', parseError)
+      console.error('Raw response:', response)
+      return NextResponse.json(
+        { 
+          error: 'Failed to parse AI response as JSON',
+          details: parseError instanceof Error ? parseError.message : 'Unknown parsing error'
+        },
+        { status: 500 }
+      )
+    }
+
+    // Validate the structure
+    if (!analysis.entities || !Array.isArray(analysis.entities)) {
+      return NextResponse.json(
+        { error: 'Invalid response structure: missing or invalid entities array' },
+        { status: 500 }
+      )
+    }
+
+    if (!analysis.relationships || !Array.isArray(analysis.relationships)) {
+      return NextResponse.json(
+        { error: 'Invalid response structure: missing or invalid relationships array' },
+        { status: 500 }
+      )
+    }
+
+    if (!analysis.suggested_folder_structure || typeof analysis.suggested_folder_structure !== 'object') {
+      return NextResponse.json(
+        { error: 'Invalid response structure: missing or invalid suggested_folder_structure' },
+        { status: 500 }
+      )
+    }
+
+    // Return the analysis
+    return NextResponse.json(analysis, { status: 200 })
 
   } catch (error) {
     console.error('Error in /api/analyze:', error)
+    
+    // Provide more specific error messages
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { 
+          error: 'Internal server error during analysis',
+          details: error.message
+        },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error during analysis' },
       { status: 500 }

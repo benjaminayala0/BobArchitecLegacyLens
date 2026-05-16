@@ -21,7 +21,7 @@ export function ThemeToggle({ className }: { className?: string }) {
                 setTheme("dark")
                 break
             case "dark":
-                setTheme("system")
+                setTheme("light")
                 break
             default:
                 setTheme("light")
@@ -45,10 +45,6 @@ export function ThemeToggle({ className }: { className?: string }) {
 
             <Moon className={cn("absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all duration-200", {
                 "rotate-0 scale-100": theme === "dark",
-            })} />
-            
-            <Monitor className={cn("absolute h-[1.2rem] w-[1.2rem] scale-0 transition-all duration-200", {
-                "scale-100": theme === "system",
             })} />
             <span className="sr-only">Toggle theme</span>
         </Button>
