@@ -3,6 +3,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { generateApiContract, type BobBlueprint } from "@/lib"
+
+interface ApiContractProps {
+    blueprint: BobBlueprint | null
+}
 
 interface Endpoint {
     endpoint: string
@@ -10,7 +15,7 @@ interface Endpoint {
     description: string
 }
 
-const endpoints: Endpoint[] = [
+const fallbackEndpoints: Endpoint[] = [
     { endpoint: "/api/v1/users", method: "GET", description: "List all users with pagination" },
     { endpoint: "/api/v1/users/:id", method: "GET", description: "Get user by ID" },
     { endpoint: "/api/v1/users", method: "POST", description: "Create new user" },
@@ -31,7 +36,43 @@ const methodColors: Record<string, string> = {
     PATCH: "bg-chart-3/20 text-chart-3",
 }
 
-export function ApiContract() {
+export function ApiContract({ blueprint }: ApiContractProps) {
+    const apiMarkdown = blueprint ? generateApiContract(blueprint) : null
+
+    const parseEndpoints = (markdown: string): Endpoint[] => {
+        const endpoints: Endpoint[] = []
+        const lines = markdown.split('\n')
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim()
+            
+            // Match patterns like: ### GET /api/users
+            const match = line.match(/^###\s+(GET|POST|PUT|DELETE|PATCH)\s+(.+)$/)
+            if (match) {
+                const [, method, endpoint] = match
+                // Get description from next line if it starts with **Description:**
+                let description = ''
+                if (i + 2 < lines.length) {
+                    const descLine = lines[i + 2].trim()
+                    const descMatch = descLine.match(/^\*\*Description:\*\*\s+(.+)$/)
+                    if (descMatch) {
+                        description = descMatch[1]
+                    }
+                }
+                
+                endpoints.push({
+                    method: method as Endpoint['method'],
+                    endpoint: endpoint.trim(),
+                    description: description || `${method} operation for ${endpoint}`
+                })
+            }
+        }
+
+        return endpoints.length > 0 ? endpoints : fallbackEndpoints
+    }
+
+    const endpoints = apiMarkdown ? parseEndpoints(apiMarkdown) : fallbackEndpoints
+
     return (
         <Card className="bg-card border-border h-full">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">

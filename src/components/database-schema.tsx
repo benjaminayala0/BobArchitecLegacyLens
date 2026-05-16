@@ -1,10 +1,16 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronDown, Copy } from "lucide-react"
+import { Maximize2, X, Copy, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { generateSqlSchema, type BobBlueprint } from "@/lib"
 
-const schemaSQL = `-- Generated PostgreSQL Schema
+interface DatabaseSchemaProps {
+    blueprint: BobBlueprint | null
+}
+
+const fallbackSQL = `-- Generated PostgreSQL Schema
 -- BlueprintAI Modernization Output
 
 CREATE TABLE users (
@@ -46,52 +52,97 @@ CREATE TABLE order_items (
 CREATE INDEX idx_orders_user ON orders(user_id);
 CREATE INDEX idx_order_items_order ON order_items(order_id);`
 
-export function DatabaseSchema() {
+export function DatabaseSchema({ blueprint }: DatabaseSchemaProps) {
+    const [copied, setCopied] = useState(false)
+    const [isExpanded, setIsExpanded] = useState(false)
+
+    const schemaSQL = blueprint ? generateSqlSchema(blueprint) : fallbackSQL
+
     const handleCopy = () => {
         navigator.clipboard.writeText(schemaSQL)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
     }
 
+    const renderSQLCode = (fontSize: string = "text-[10px]", lineHeight: string = "leading-4") => (
+        <pre className={`p-3 ${fontSize} ${lineHeight} font-mono`}>
+            <code>
+                {schemaSQL.split("\n").map((line, i) => (
+                    <div
+                        key={i}
+                        className={`${line.startsWith("--")
+                            ? "text-muted-foreground/50"
+                            : line.startsWith("CREATE")
+                                ? "text-primary"
+                                : line.includes("PRIMARY KEY") || line.includes("REFERENCES")
+                                    ? "text-chart-2"
+                                    : "text-foreground/80"
+                            }`}
+                    >
+                        {line || " "}
+                    </div>
+                ))}
+            </code>
+        </pre>
+    )
+
     return (
-        <Card className="bg-card border-border">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium text-foreground">
-                    Database Schema (SQL)
-                </CardTitle>
+        <>
+            <Card className="bg-card border-border">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                    <CardTitle className="text-sm font-medium text-foreground">
+                        Database Schema (SQL)
+                    </CardTitle>
 
-                <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy}>
-                        <Copy className="h-3 w-3" />
-                    </Button>
+                    <div className="flex gap-1">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`h-6 w-6 transition-colors ${copied ? 'text-green-500' : ''}`}
+                            onClick={handleCopy}
+                        >
+                            {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                        </Button>
 
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                        <ChevronDown className="h-4 w-4" />
-                    </Button>
-                </div>
-            </CardHeader>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsExpanded(true)}>
+                            <Maximize2 className="h-3 w-3" />
+                        </Button>
+                    </div>
+                </CardHeader>
 
-            <CardContent>
-                <div className="bg-secondary/30 rounded-lg overflow-hidden max-h-[280px] overflow-auto">
-                    <pre className="p-3 text-[10px] leading-4 font-mono">
-                        <code>
-                            {schemaSQL.split("\n").map((line, i) => (
-                                <div
-                                    key={i}
-                                    className={`${line.startsWith("--")
-                                        ? "text-muted-foreground/50"
-                                        : line.startsWith("CREATE")
-                                            ? "text-primary"
-                                            : line.includes("PRIMARY KEY") || line.includes("REFERENCES")
-                                                ? "text-chart-2"
-                                                : "text-foreground/80"
-                                        }`}
+                <CardContent>
+                    <div className="bg-secondary/30 rounded-lg max-h-[280px] overflow-y-auto overflow-x-hidden">
+                        {renderSQLCode()}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {isExpanded && (
+                <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm p-8">
+                    <div className="h-full flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-2xl font-semibold text-foreground">Database Schema (SQL)</h2>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`gap-2 transition-colors ${copied ? 'text-green-500 border-green-500' : ''}`}
+                                    onClick={handleCopy}
                                 >
-                                    {line || " "}
-                                </div>
-                            ))}
-                        </code>
-                    </pre>
+                                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                    {copied ? 'Copied!' : 'Copy SQL'}
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)}>
+                                    <X className="h-6 w-6" />
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="flex-1 bg-secondary/30 rounded-lg overflow-auto">
+                            {renderSQLCode("text-sm", "leading-6")}
+                        </div>
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
+            )}
+        </>
     )
 }
