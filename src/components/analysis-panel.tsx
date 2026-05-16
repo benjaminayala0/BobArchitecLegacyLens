@@ -46,13 +46,11 @@ export function AnalysisPanel({ isAnalyzing = true, onComplete }: AnalysisPanelP
     useEffect(() => {
         if (!isAnalyzing) return
 
-        // Animate scanning text
         const textInterval = setInterval(() => {
             setCurrentLine((prev) => (prev + 1) % scanningLines.length)
             setScanningText(scanningLines[currentLine])
         }, 800)
 
-        // Animate progress
         const progressInterval = setInterval(() => {
             setProgress((prev) => {
                 if (prev >= 100) {
@@ -64,19 +62,16 @@ export function AnalysisPanel({ isAnalyzing = true, onComplete }: AnalysisPanelP
             })
         }, 150)
 
-        // Animate steps
         const stepInterval = setInterval(() => {
             setSteps((prevSteps) => {
                 const runningIndex = prevSteps.findIndex((s) => s.status === "running")
                 const pendingIndex = prevSteps.findIndex((s) => s.status === "pending")
 
                 if (runningIndex === -1 && pendingIndex !== -1) {
-                    // Start first pending step
                     return prevSteps.map((s, i) =>
                         i === pendingIndex ? { ...s, status: "running" as const } : s
                     )
                 } else if (runningIndex !== -1) {
-                    // Complete running step and start next
                     return prevSteps.map((s, i) => {
                         if (i === runningIndex) return { ...s, status: "completed" as const }
                         if (i === runningIndex + 1 && s.status === "pending")
@@ -106,6 +101,7 @@ export function AnalysisPanel({ isAnalyzing = true, onComplete }: AnalysisPanelP
                         <div className="h-3 w-3 rounded-full bg-primary animate-pulse" />
                         <div className="absolute h-3 w-3 rounded-full bg-primary animate-ping" />
                     </div>
+
                     IBM Bob Analyzing...
                 </CardTitle>
             </CardHeader>
@@ -127,7 +123,6 @@ export function AnalysisPanel({ isAnalyzing = true, onComplete }: AnalysisPanelP
                             ))}
                         </div>
 
-                        {/* Scanning animation */}
                         <div className="flex-1 relative">
                             {/* Scan line effect */}
                             <div

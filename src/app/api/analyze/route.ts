@@ -5,8 +5,8 @@
  * Returns a mock blueprint for hotel management system.
  */
 
-import { NextResponse } from 'next/server';
-import type { BobBlueprint } from '@/types/blueprint';
+import { NextResponse } from 'next/server'
+import type { BobBlueprint } from '@/types/blueprint'
 
 /**
  * Mock API route that simulates IBM Bob's analysis of legacy code.
@@ -15,19 +15,19 @@ import type { BobBlueprint } from '@/types/blueprint';
 export async function POST(req: Request) {
   try {
     // Parse the incoming request body
-    const body = await req.json();
-    const { code } = body;
+    const body = await req.json()
+    const { code } = body
 
     // Validate input
     if (!code || typeof code !== 'string') {
       return NextResponse.json(
         { error: 'Invalid request: code field is required and must be a string' },
         { status: 400 }
-      );
+      )
     }
 
     // Simulate AI processing time (2.5 seconds)
-    await new Promise(resolve => setTimeout(resolve, 2500));
+    await new Promise(resolve => setTimeout(resolve, 2500))
 
     // Mock IBM Bob analysis response - Hotel Management System
     const mockAnalysis: BobBlueprint = {
@@ -531,17 +531,17 @@ export async function POST(req: Request) {
           "DEPLOYMENT.md"
         ]
       }
-    };
+    }
 
     // Return the mock analysis
-    return NextResponse.json(mockAnalysis, { status: 200 });
+    return NextResponse.json(mockAnalysis, { status: 200 })
 
   } catch (error) {
-    console.error('Error in /api/analyze:', error);
+    console.error('Error in /api/analyze:', error)
     return NextResponse.json(
       { error: 'Internal server error during analysis' },
       { status: 500 }
-    );
+    )
   }
 }
 
