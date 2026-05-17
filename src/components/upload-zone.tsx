@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 interface UploadZoneProps {
     onUpload?: (files: FileList) => void
     onCodePaste?: (code: string) => void
+    onZipUpload?: (zipBase64: string) => void
 }
 
 export function UploadZone({ onUpload, onCodePaste }: UploadZoneProps) {

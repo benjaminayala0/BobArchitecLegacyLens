@@ -96,16 +96,24 @@ export default function BlueprintAI() {
     setAnalysisComplete(true)
   }
 
-  const analyzeCode = async (code: string) => {
+  const analyzeCode = async (code?: string, zipBase64?: string) => {
     try {
-      setActiveCode(code)
+      if (code) {
+        setActiveCode(code)
+      } else {
+        setActiveCode("// Multiple files from ZIP analyzed")
+      }
+
+      const payload: any = {}
+      if (code) payload.code = code
+      if (zipBase64) payload.zipBase64 = zipBase64
 
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -121,7 +129,8 @@ export default function BlueprintAI() {
 
       const data: BobBlueprint = await response.json()
 
-      setBlueprintData({ ...data, original_code: code })
+      setActiveCode(data.original_code || code || "// Code analyzed")
+      setBlueprintData({ ...data, original_code: data.original_code || code })
       setAnalysisComplete(true)
 
       setTimeout(() => {
