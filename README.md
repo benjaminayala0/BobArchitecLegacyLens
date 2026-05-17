@@ -41,7 +41,7 @@ Simply upload your legacy code → IBM watsonx.ai analyzes it with full context 
 | 📊 **ER Diagram** | Interactive visual diagram of the detected database schema (Mermaid.js) |
 | 🗃️ **SQL Schema** | Normalized PostgreSQL schema generated from implicit table structures |
 | 📁 **Folder Scaffolding** | Clean Architecture directory tree (Domain, Application, Infrastructure, Presentation) |
-| 🔀 **Before & After** | Split-view code comparison highlighting legacy vs. modern patterns |
+| 📄 **Legacy Code Inspector** | Clean, syntax-highlighted viewer for the uploaded legacy source |
 | 📦 **Export ZIP** | One-click download of the complete modernized project scaffold with real code |
 | 📋 **API Contract** | Auto-generated REST endpoint definitions based on detected business logic |
 
