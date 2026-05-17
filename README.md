@@ -7,10 +7,10 @@
 An enterprise-grade modernization assistant powered by **IBM watsonx.ai** that analyzes legacy codebases and generates complete architectural blueprints — including database schemas, folder structures, API contracts, and modernized code.
 
 [![Built with Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
-[![Powered by IBM watsonx.ai](https://img.shields.io/badge/IBM_watsonx.ai-Granite_4H-0062FF?logo=ibm)](https://www.ibm.com/watsonx)
+[![Powered by IBM watsonx.ai](https://img.shields.io/badge/IBM_watsonx.ai-Granite_4H_Small-0062FF?logo=ibm)](https://www.ibm.com/watsonx)
 [![Hackathon](https://img.shields.io/badge/lablab.ai-IBM_Bob_Hackathon-green)](https://lablab.ai/ai-hackathons/ibm-bob-hackathon)
 
-[Live Demo](#) • [Documentation](#-how-it-works) • [Report Bug](https://github.com/benjaminayala0/BobArchitecLegacyLens/issues)
+[Live Demo](https://bob-architec-legacy-lens.vercel.app/) • [Documentation](#-how-it-works) • [Report Bug](https://github.com/benjaminayala0/BobArchitecLegacyLens/issues)
 
 </div>
 
@@ -76,14 +76,15 @@ Simply upload your legacy code → IBM watsonx.ai analyzes it with full context 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
 | **AI Engine** | IBM watsonx.ai (Granite 4H Small) | Full-context legacy code analysis with enterprise-grade LLM |
-| **Framework** | Next.js 16 (App Router) | Fast development with built-in API routes and SSR |
-| **Styling** | Tailwind CSS v4 | Utility-first CSS for premium dark UI |
-| **Components** | Shadcn UI (Radix + Maia) | Accessible, customizable component library |
-| **Diagrams** | Mermaid.js v11 | Dynamic ER diagram rendering |
-| **Icons** | Lucide React | Clean, consistent iconography |
-| **Animations** | Framer Motion | Smooth transitions and micro-interactions |
-| **File Processing** | JSZip | ZIP file creation and extraction |
-| **Authentication** | IBM Cloud IAM | Secure API key authentication |
+| **Framework** | Next.js 16.2.6 (App Router) | React 19 with built-in API routes and SSR |
+| **Styling** | Tailwind CSS v4 | Utility-first CSS with custom design tokens |
+| **Components** | Shadcn UI + Base UI + Radix UI | Accessible, production-ready component library |
+| **Diagrams** | Mermaid.js v11.15 | Dynamic ER diagram rendering |
+| **Icons** | Lucide React + HugeIcons | Comprehensive icon system |
+| **Animations** | Framer Motion v12 | Smooth transitions and micro-interactions |
+| **File Processing** | JSZip v3.10 | ZIP file creation and extraction |
+| **Authentication** | IBM Cloud IAM | Secure token-based API authentication |
+| **Analytics** | Vercel Analytics | Production monitoring and insights |
 
 ## 🚀 Getting Started
 
@@ -150,16 +151,19 @@ npm start
 ```
 bob-arch-legacylens/
 ├── src/
-│   ├── app/                          # Next.js App Router
+│   ├── app/                          # Next.js 16 App Router
 │   │   ├── api/
 │   │   │   └── analyze/
-│   │   │       └── route.ts          # IBM watsonx.ai API integration
+│   │   │       └── route.ts          # IBM watsonx.ai integration (Granite 4H Small)
+│   │   ├── docs/
+│   │   │   └── page.tsx              # Documentation page
 │   │   ├── layout.tsx                # Root layout with theme provider
 │   │   ├── page.tsx                  # Main dashboard (analysis + blueprint)
-│   │   └── globals.css               # Global styles and design tokens
+│   │   ├── globals.css               # Global styles and Tailwind v4 config
+│   │   └── icon.png                  # App favicon
 │   │
 │   ├── components/
-│   │   ├── ui/                       # Shadcn UI base components (40+ components)
+│   │   ├── ui/                       # 60+ Shadcn/Base UI components
 │   │   ├── analysis-panel.tsx        # Real-time analysis progress display
 │   │   ├── api-contract.tsx          # REST API documentation viewer
 │   │   ├── code-viewer.tsx           # Before/After code comparison
@@ -167,46 +171,52 @@ bob-arch-legacylens/
 │   │   ├── er-diagram.tsx            # Interactive Mermaid.js ER diagram
 │   │   ├── folder-scaffolding.tsx    # Clean Architecture folder tree
 │   │   ├── header.tsx                # App header with branding
-│   │   ├── theme-provider.tsx        # Dark/Light theme context
+│   │   ├── theme-provider.tsx        # Dark/Light theme context (next-themes)
 │   │   ├── theme-toggle.tsx          # Theme switcher button
-│   │   └── upload-zone.tsx           # Drag-drop file upload + code paste
+│   │   └── upload-zone.tsx           # Drag-drop file upload + code paste + ZIP support
 │   │
 │   ├── lib/
 │   │   ├── apiContractGenerator.ts   # Generates REST API markdown docs
 │   │   ├── index.ts                  # Barrel export for all utilities
 │   │   ├── mermaidGenerator.ts       # Converts blueprint → Mermaid ER syntax
 │   │   ├── sqlGenerator.ts           # Generates PostgreSQL CREATE TABLE statements
-│   │   ├── utils.ts                  # Shared utility functions (cn, etc.)
+│   │   ├── utils.ts                  # Shared utility functions (cn, clsx)
 │   │   └── zipDownloader.ts          # Creates downloadable ZIP with real code
 │   │
 │   ├── types/
-│   │   └── blueprint.ts              # TypeScript interfaces and validators
+│   │   └── blueprint.ts              # TypeScript interfaces, validators, and type guards
 │   │
-│   └── hooks/
-│       ├── use-mobile.ts             # Responsive breakpoint detection
-│       └── use-toast.tsx             # Toast notification system
+│   ├── hooks/
+│   │   ├── use-mobile.ts             # Responsive breakpoint detection
+│   │   └── use-toast.tsx             # Toast notification system (Sonner)
+│   │
+│   └── docs/
+│       ├── component-specs.json      # Component specifications
+│       └── designs-tokens.json       # Design system tokens
 │
 ├── public/
-│   └── images/                       # App screenshots and assets
+│   └── images/
+│       └── bob3.png                  # App logo/branding
 │
-├── test-samples/                     # Example legacy code files
-│   ├── HotelServlet.java
-│   ├── legacy_patient_zero.php
-│   └── legacy_school_system.py
+├── test-samples/                     # Example legacy code files for testing
+│   ├── HotelServlet.java             # Java servlet with SQL injection
+│   ├── legacy_patient_zero.php       # PHP medical system
+│   ├── legacy_payroll.cbl            # COBOL payroll system
+│   └── legacy_school_system.py       # Python school management
 │
-├── .env.example                      # Environment variables template
 ├── components.json                   # Shadcn UI configuration
 ├── next.config.ts                    # Next.js configuration
 ├── package.json                      # Dependencies and scripts
-├── tailwind.config.ts                # Tailwind CSS configuration
-└── tsconfig.json                     # TypeScript configuration
+├── postcss.config.mjs                # PostCSS configuration
+├── tsconfig.json                     # TypeScript strict mode configuration
+└── eslint.config.mjs                 # ESLint v9 configuration
 ```
 
 ## 🎨 Design System
 
 ### Color Palette
 - **Background:** Deep Charcoal (`#0A0A0A`)
-- **Primary Accent:** Electric Blue (`#0062FF` — IBM Brand)
+- **Primary Accent:** IBM Blue (`#0062FF`)
 - **Secondary:** Slate Gray (`#1E1E1E`)
 - **Text:** Soft Gray (`#A8A8A8`) on dark surfaces
 - **Success:** Emerald Green (`#10B981`)
@@ -216,74 +226,75 @@ bob-arch-legacylens/
 ### Visual Effects
 - **Glassmorphism cards** with backdrop blur
 - **Subtle gradient borders** on interactive elements
-- **Smooth animations** powered by Framer Motion
-- **Responsive grid layouts** adapting to all screen sizes
+- **Smooth animations** powered by Framer Motion v12
+- **Responsive grid layouts** with Tailwind CSS v4
+- **Dark/Light theme support** with next-themes
 
 ### Typography
-- **Font Family:** Figtree (via Shadcn Maia preset)
-- **Monospace:** JetBrains Mono for code blocks
+- **System Fonts:** Optimized for performance and readability
+- **Monospace:** For code blocks and technical content
 
-## 🔧 Key Features Implemented
+## 🔧 Key Features
 
 ### ✅ Core Functionality
-- [x] **IBM watsonx.ai Integration** — Granite 4H Small model for code analysis
-- [x] **IAM Authentication** — Secure token-based API authentication
-- [x] **Multi-file Upload** — Support for ZIP archives and individual files
-- [x] **Code Paste Interface** — Direct code input via textarea
-- [x] **Real-time Analysis** — Progress indicators during AI processing
-- [x] **Parallel API Calls** — 3 concurrent watsonx.ai requests for faster results
+- **IBM watsonx.ai Integration** — Granite 4H Small model with IAM authentication
+- **Multi-format Input** — ZIP archives, individual files, or direct code paste
+- **Parallel AI Processing** — 3 concurrent watsonx.ai API calls for optimal performance
+- **Real-time Progress** — Live analysis status with visual feedback
+- **Robust Error Handling** — Graceful fallbacks and user-friendly error messages
 
-### ✅ Output Generators
-- [x] **ER Diagram Generator** — Mermaid.js syntax with entity relationships
-- [x] **SQL Schema Generator** — PostgreSQL-compliant CREATE TABLE statements
-- [x] **API Contract Generator** — REST endpoint documentation in markdown
-- [x] **Folder Structure Generator** — Clean Architecture scaffolding
-- [x] **Code Modernizer** — TypeScript/NestJS conversion (max 15 lines)
+### ✅ AI-Powered Analysis
+- **Entity Extraction** — Automatic detection of database entities and fields
+- **Relationship Mapping** — Identifies one-to-many, many-to-one, and many-to-many relationships
+- **Schema Generation** — PostgreSQL-compliant CREATE TABLE statements
+- **ER Diagram** — Interactive Mermaid.js visualizations
+- **API Contract Generation** — REST endpoint documentation based on business logic
+- **Code Modernization** — TypeScript/NestJS conversion with best practices
 
-### ✅ Export & Download
-- [x] **ZIP Downloader** — Complete project scaffold with real code
-- [x] **Entity Files** — TypeORM entity classes with decorators
-- [x] **Service Files** — NestJS service classes with CRUD operations
-- [x] **Smart Content Generation** — Context-aware file content based on analysis
+### ✅ Export & Scaffolding
+- **Complete ZIP Export** — Downloadable project scaffold with real, working code
+- **TypeORM Entities** — Fully decorated entity classes
+- **NestJS Services** — CRUD operations with dependency injection
+- **Clean Architecture** — Domain, Application, Infrastructure, Presentation layers
+- **Smart Content Generation** — Context-aware file content based on analysis
 
-### ✅ UI/UX Enhancements
-- [x] **Dark/Light Theme Toggle** — Persistent theme preference
-- [x] **Responsive Design** — Mobile, tablet, and desktop layouts
-- [x] **Split-view Code Comparison** — Before/After side-by-side
-- [x] **Interactive Components** — Collapsible sections, tabs, accordions
-- [x] **Error Handling** — User-friendly error messages with recovery options
+### ✅ UI/UX
+- **Dark/Light Theme** — Persistent theme preference with next-themes
+- **Responsive Design** — Optimized for mobile, tablet, and desktop
+- **Split-view Comparison** — Before/After code side-by-side
+- **Interactive Components** — 60+ Shadcn/Base UI components
+- **Drag & Drop Upload** — Intuitive file upload experience
 
-### ✅ Developer Experience
-- [x] **TypeScript Strict Mode** — Full type safety
-- [x] **Centralized Type Definitions** — Single source of truth in `blueprint.ts`
-- [x] **Barrel Exports** — Clean imports via `@/lib` index
-- [x] **Comprehensive Documentation** — JSDoc comments on all utilities
-- [x] **Example Files** — Test samples for quick testing
+### ✅ Production Ready
+- **TypeScript Strict Mode** — Full type safety and validation
+- **Vercel Analytics** — Production monitoring and insights
+- **SSR Safety** — Browser-only functions properly guarded
+- **SQL Injection Prevention** — Identifier validation and sanitization
+- **Comprehensive Testing** — Multiple legacy code samples included
 
 ## 🧪 Testing the Application
 
 ### Sample Legacy Code Files
 
-The project includes three test samples in `test-samples/`:
+The project includes four test samples in `test-samples/`:
 
 1. **HotelServlet.java** — Legacy Java servlet with SQL injection vulnerabilities
 2. **legacy_patient_zero.php** — PHP medical system with mixed concerns
 3. **legacy_school_system.py** — Python school management with procedural code
+4. **legacy_payroll.cbl** — COBOL payroll system (mainframe legacy)
 
 ### Quick Test
 
-```bash
-# Upload one of the sample files through the UI
-# Or paste this sample code:
+1. Start the development server: `npm run dev`
+2. Open [http://localhost:3000](http://localhost:3000)
+3. Upload one of the sample files or paste code directly
+4. Watch IBM watsonx.ai analyze and generate the blueprint
+5. Export the modernized scaffold as a ZIP file
 
-<?php
-// Legacy PHP code
-$conn = mysqli_connect("localhost", "root", "", "hospital");
-$patient_id = $_GET['id'];
-$query = "SELECT * FROM patients WHERE id = " . $patient_id;
-$result = mysqli_query($conn, $query);
-?>
-```
+### Supported Languages
+- Java, PHP, Python, JavaScript, TypeScript
+- COBOL, C, C++, C#, Ruby, Go
+- SQL and other common legacy languages
 
 ## 📊 API Reference
 
@@ -343,68 +354,88 @@ Analyzes legacy code and returns a modernization blueprint.
 }
 ```
 
-## 🔐 Security Considerations
+## 🔐 Security & Best Practices
 
-- **API Key Protection** — Environment variables never committed to Git
-- **SQL Injection Prevention** — Identifier validation and sanitization
-- **Input Validation** — Blueprint validation with TypeScript type guards
+- **API Key Protection** — Environment variables with `.env.local` (never committed)
+- **SQL Injection Prevention** — Strict identifier validation and sanitization
+- **Input Validation** — TypeScript type guards and runtime validation
 - **SSR Safety** — Browser-only functions protected with `typeof window` checks
-- **CORS Configuration** — Restricted to same-origin requests
+- **IAM Authentication** — Secure token-based authentication with IBM Cloud
+- **Error Handling** — Comprehensive try-catch blocks with graceful fallbacks
+- **Type Safety** — TypeScript strict mode enabled across the entire codebase
 
 ## 🚧 Known Limitations
 
-- **Code Length** — Modernized code limited to 15 lines for performance
-- **Entity Count** — Maximum 6 entities per analysis
+- **Modernized Code** — Limited to 15 lines for optimal performance and readability
+- **Entity Count** — Maximum 6 entities per analysis (configurable in prompts)
 - **Relationship Count** — Maximum 5 relationships per analysis
-- **File Types** — Supports common languages (Java, PHP, Python, JavaScript, TypeScript, SQL, COBOL)
-- **ZIP Size** — Large archives may timeout (recommended < 10MB)
+- **ZIP Size** — Recommended < 10MB to avoid timeouts
+- **AI Model Constraints** — Response quality depends on IBM watsonx.ai availability and token limits
 
 ## 🗺️ Roadmap
 
-### Phase 1 (Current) ✅
-- [x] IBM watsonx.ai integration
-- [x] Basic analysis pipeline
-- [x] ER diagram generation
-- [x] SQL schema export
-- [x] ZIP download functionality
+### ✅ Phase 1 (Completed)
+- IBM watsonx.ai integration with Granite 4H Small
+- Complete analysis pipeline with parallel processing
+- ER diagram generation with Mermaid.js
+- SQL schema export (PostgreSQL)
+- ZIP download with real code scaffolding
+- Production deployment on Vercel
 
-### Phase 2 (Planned)
-- [ ] Multi-language support (Spanish, Portuguese)
-- [ ] Advanced code metrics (cyclomatic complexity, code smells)
-- [ ] Git repository integration (analyze entire repos)
-- [ ] Incremental analysis (analyze changes only)
-- [ ] Custom architecture templates (Hexagonal, Onion, etc.)
+### 🚀 Phase 2 (Planned)
+- Multi-language UI support (Spanish, Portuguese)
+- Advanced code metrics (cyclomatic complexity, maintainability index)
+- Git repository integration (analyze entire repos via URL)
+- Incremental analysis (analyze only changed files)
+- Custom architecture templates (Hexagonal, Onion, CQRS)
+- Batch processing for multiple files
 
-### Phase 3 (Future)
-- [ ] AI-powered refactoring suggestions
-- [ ] Automated test generation
-- [ ] Migration cost estimation
-- [ ] Team collaboration features
-- [ ] CI/CD pipeline integration
+### 🔮 Phase 3 (Future Vision)
+- AI-powered refactoring suggestions with step-by-step guides
+- Automated test generation (unit, integration, e2e)
+- Migration cost estimation and timeline prediction
+- Team collaboration features (shared blueprints, comments)
+- CI/CD pipeline integration (GitHub Actions, GitLab CI)
+- Real-time collaboration with WebSockets
 
 ## 🏆 IBM Bob Hackathon
 
 This project was built during the [IBM Bob Hackathon](https://lablab.ai/ai-hackathons/ibm-bob-hackathon) on lablab.ai (May 15–17, 2026).
 
-### Team
-- **Benjamín Ayala** — Architecture Lead & Project Strategy
-- **Oscar Lindo** — Frontend Lead & AI Integration
+### 👥 Team
+- **Benjamín Ayala** — Full-Stack Architecture & AI Integration
+- **Oscar Lindo** — Frontend Development & UI/UX Design
 
-### Achievements
-- ✨ Full IBM watsonx.ai integration with Granite 4H Small
-- 🎨 Premium dark UI with 40+ Shadcn components
-- 📦 Complete modernization pipeline from analysis to export
-- 🚀 Production-ready Next.js 16 application
+### 🎯 Achievements
+- ✨ Full IBM watsonx.ai integration with Granite 4H Small model
+- 🎨 Production-grade UI with 60+ accessible components
+- 📦 Complete modernization pipeline from legacy code to modern scaffold
+- 🚀 Deployed to production on Vercel with analytics
+- 🔒 Enterprise-grade security with IAM authentication
+- 📊 Real-time analysis with parallel AI processing
+- 💾 Smart ZIP export with context-aware code generation
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+Contributions are welcome! We appreciate your interest in improving BobArchitecLegacyLens.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### How to Contribute
+
+1. **Fork the repository** on GitHub
+2. **Clone your fork** locally: `git clone https://github.com/YOUR_USERNAME/BobArchitecLegacyLens.git`
+3. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+4. **Make your changes** with clear, descriptive commits
+5. **Test thoroughly** to ensure nothing breaks
+6. **Push to your fork**: `git push origin feature/amazing-feature`
+7. **Open a Pull Request** with a detailed description of your changes
+
+### Development Guidelines
+
+- Follow TypeScript strict mode conventions
+- Maintain existing code style and formatting
+- Add JSDoc comments for new functions
+- Update tests if applicable
+- Keep commits atomic and well-described
 
 ## 📄 License
 
@@ -414,7 +445,11 @@ This project is open source and available under the [MIT License](LICENSE).
 
 <div align="center">
 
-**Built with ❤️ using IBM watsonx.ai**
+### 🌟 Built with IBM watsonx.ai Granite 4H Small
+
+**[Live Demo](https://bob-architec-legacy-lens.vercel.app/)** • **[Report Issues](https://github.com/benjaminayala0/BobArchitecLegacyLens/issues)** • **[Star on GitHub](https://github.com/benjaminayala0/BobArchitecLegacyLens)**
+
+Made with ❤️ during the IBM Bob Hackathon 2026
 
 [⬆ Back to Top](#-bobarchiteclegacylens)
 
