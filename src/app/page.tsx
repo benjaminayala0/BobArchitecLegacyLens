@@ -23,7 +23,6 @@ export default function BlueprintAI() {
   const [activeCode, setActiveCode] = useState<string>("")
 
   const handleUpload = async (files: FileList) => {
-    console.log("Files uploaded:", files)
     setIsAnalyzing(true)
     setAnalysisComplete(false)
     setError(null)
@@ -78,7 +77,6 @@ export default function BlueprintAI() {
   }
 
   const handleCodePaste = async (code: string) => {
-    console.log("Code pasted:", code.substring(0, 100))
     setIsAnalyzing(true)
     setAnalysisComplete(false)
     setError(null)
@@ -89,8 +87,6 @@ export default function BlueprintAI() {
   const analyzeCode = async (code: string) => {
     try {
       setActiveCode(code)
-      console.log('Sending code to API for analysis...')
-      console.log('Code length:', code.length)
 
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -100,23 +96,18 @@ export default function BlueprintAI() {
         body: JSON.stringify({ code }),
       })
 
-      console.log('API Response status:', response.status)
-
       if (!response.ok) {
         let errorMessage = 'Analysis failed'
         try {
           const errorData = await response.json()
           errorMessage = errorData.error || errorData.details || errorMessage
-          console.error('API Error:', errorData)
         } catch (e) {
-          console.error('Failed to parse error response:', e)
           errorMessage = `Server error (${response.status}): ${response.statusText}`
         }
         throw new Error(errorMessage)
       }
 
       const data: BobBlueprint = await response.json()
-      console.log('Analysis successful, entities found:', data.entities?.length || 0)
 
       setBlueprintData({ ...data, original_code: code })
       setAnalysisComplete(true)

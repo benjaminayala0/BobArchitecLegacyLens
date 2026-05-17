@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { CheckCircle2, Circle, Loader2 } from "lucide-react"
@@ -28,6 +28,7 @@ export function AnalysisPanel({ isAnalyzing, code }: AnalysisPanelProps) {
     const [steps, setSteps] = useState<AnalysisStep[]>(initialSteps)
     const [currentLine, setCurrentLine] = useState(0)
     const [scanningText, setScanningText] = useState("Initializing...")
+    const scrollContainerRef = useRef<HTMLDivElement>(null)
 
     const codeLines = code ? code.split('\n') : []
     const displayLines = codeLines.length > 0 ? codeLines : Array.from({ length: 12 }, () => "...")
@@ -92,7 +93,26 @@ export function AnalysisPanel({ isAnalyzing, code }: AnalysisPanelProps) {
             clearInterval(textInterval)
             clearInterval(stepInterval)
         }
-    }, [isAnalyzing])
+    }, [isAnalyzing, totalLines])
+
+    // Auto-scroll to keep the current line visible
+    useEffect(() => {
+        if (!scrollContainerRef.current || !isAnalyzing) return
+
+        const container = scrollContainerRef.current
+        const lineHeight = 20 // Each line is 20px (leading-5 = 1.25rem = 20px)
+        const containerHeight = container.clientHeight
+        const currentLinePosition = currentLine * lineHeight
+        
+        // Calculate scroll position to center the current line
+        const targetScroll = currentLinePosition - (containerHeight / 2) + (lineHeight / 2)
+        
+        // Smooth scroll to the target position
+        container.scrollTo({
+            top: Math.max(0, targetScroll),
+            behavior: 'smooth'
+        })
+    }, [currentLine, isAnalyzing])
 
     const completedSteps = steps.filter((s) => s.status === "completed").length
     const progressPercentage = Math.round((completedSteps / steps.length) * 100)
@@ -118,7 +138,7 @@ export function AnalysisPanel({ isAnalyzing, code }: AnalysisPanelProps) {
 
             <CardContent className="space-y-4">
                 {/* Code scanning visualization */}
-                <div className="bg-secondary/50 rounded-lg p-4 font-mono text-xs overflow-y-auto max-h-[250px] relative">
+                <div ref={scrollContainerRef} className="bg-secondary/50 rounded-lg p-4 font-mono text-xs overflow-y-auto max-h-[250px] relative">
                     <div className="flex gap-4">
                         {/* Line numbers */}
                         <div className="flex flex-col text-muted-foreground/50 select-none">

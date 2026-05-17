@@ -54,8 +54,7 @@ export function UploadZone({ onUpload, onCodePaste }: UploadZoneProps) {
                     type="file"
                     ref={fileInputRef}
                     className="hidden"
-                    accept=".zip,.java,.php,.sql,.py,.js,.ts"
-                    multiple
+                    multiple={false}
                     onChange={(e) => e.target.files && onUpload?.(e.target.files)}
                 />
 
@@ -78,7 +77,7 @@ export function UploadZone({ onUpload, onCodePaste }: UploadZoneProps) {
                         </div>
 
                         <p className="text-center text-foreground font-medium mb-2 text-lg">
-                            Drag & Drop Legacy Repository (ZIP, Folder)
+                            Drag & Drop Legacy File
                         </p>
 
                         <p className="text-center text-muted-foreground text-sm mb-6">
@@ -90,8 +89,8 @@ export function UploadZone({ onUpload, onCodePaste }: UploadZoneProps) {
                                 e.stopPropagation()
                                 handleFileSelect()
                             }}>
-                                <FolderArchive className="h-4 w-4" />
-                                Upload ZIP
+                                <FileCode className="h-4 w-4" />
+                                Upload File
                             </Button>
 
                             <Button variant="outline" size="sm" className="gap-2" onClick={(e) => {

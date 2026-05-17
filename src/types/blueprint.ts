@@ -79,7 +79,7 @@ export interface BobBlueprint {
  * @returns true if valid, false otherwise
  */
 export function isValidSqlIdentifier(identifier: string): boolean {
-  return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(identifier);
+  return /^[a-zA-Z_][a-zA-Z0-9_\-]*$/.test(identifier);
 }
 
 /**

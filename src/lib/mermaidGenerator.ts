@@ -22,7 +22,7 @@ export function generateMermaidERDiagram(blueprint: BobBlueprint): string {
   blueprint.entities.forEach((entity: Entity) => {
     mermaidStr += `    ${entity.name} {\n`;
     entity.fields.forEach((field: Field) => {
-      const type = field.type.replace(/\s+/g, "_"); // Mermaid doesn't like spaces in types
+      const type = field.type.replace(/[^a-zA-Z0-9_]/g, "_"); // Mermaid doesn't like special characters in types
       const pkMarker = field.primary_key ? " PK" : "";
       const fkMarker = field.foreign_key ? " FK" : "";
       mermaidStr += `        ${type} ${field.name}${pkMarker}${fkMarker}\n`;

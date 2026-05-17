@@ -211,8 +211,6 @@ export const downloadZip = async (
 
     // Clean up the URL object
     URL.revokeObjectURL(url);
-
-    console.log(`✅ Successfully downloaded ${zipFileName}`);
   } catch (error) {
     console.error('Error creating zip file:', error);
     throw new Error(`Failed to create zip file: ${error instanceof Error ? error.message : 'Unknown error'}`);
