@@ -57,9 +57,7 @@ export default function DocsPage() {
                     {/* Executive Overview */}
                     <section className="space-y-8">
                         <div className="flex items-center gap-4 pb-6 border-b-2 border-border">
-                            <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl border border-primary/20">
-                                <TrendingUp className="h-7 w-7 text-primary" />
-                            </div>
+                            <TrendingUp className="h-8 w-8 text-primary" />
                             <div>
                                 <h2 className="text-4xl font-bold tracking-tight text-foreground">Executive Overview</h2>
                                 <p className="text-muted-foreground mt-1">Understanding the modernization imperative</p>
@@ -91,9 +89,7 @@ export default function DocsPage() {
                     {/* The Problem Section */}
                     <section className="space-y-8">
                         <div className="flex items-center gap-4 pb-6 border-b-2 border-border">
-                            <div className="p-3 bg-gradient-to-br from-destructive/20 to-destructive/5 rounded-xl border border-destructive/20">
-                                <AlertTriangle className="h-7 w-7 text-destructive" />
-                            </div>
+                            <AlertTriangle className="h-8 w-8 text-destructive" />
                             <div>
                                 <h2 className="text-4xl font-bold tracking-tight text-foreground">The Modernization Challenge</h2>
                                 <p className="text-muted-foreground mt-1">Critical barriers to digital transformation</p>
@@ -164,9 +160,7 @@ export default function DocsPage() {
                     {/* The Solution Section */}
                     <section className="space-y-8">
                         <div className="flex items-center gap-4 pb-6 border-b-2 border-border">
-                            <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl border border-primary/20">
-                                <Sparkles className="h-7 w-7 text-primary" />
-                            </div>
+                            <Sparkles className="h-8 w-8 text-primary" />
                             <div>
                                 <h2 className="text-4xl font-bold tracking-tight text-foreground">The BobArchitecLegacyLens Solution</h2>
                                 <p className="text-muted-foreground mt-1">AI-powered architectural intelligence at enterprise scale</p>
@@ -277,9 +271,7 @@ export default function DocsPage() {
                     {/* How It Works Section */}
                     <section className="space-y-8">
                         <div className="flex items-center gap-4 pb-6 border-b-2 border-border">
-                            <div className="p-3 bg-gradient-to-br from-chart-2/20 to-chart-2/5 rounded-xl border border-chart-2/20">
-                                <Workflow className="h-7 w-7 text-chart-2" />
-                            </div>
+                            <Workflow className="h-8 w-8 text-chart-2" />
                             <div>
                                 <h2 className="text-4xl font-bold tracking-tight text-foreground">System Architecture & Workflow</h2>
                                 <p className="text-muted-foreground mt-1">End-to-end modernization pipeline</p>
@@ -338,43 +330,51 @@ export default function DocsPage() {
                             <div className="absolute top-0 bottom-0 left-[31px] w-0.5 bg-gradient-to-b from-primary via-primary/50 to-transparent" />
                             
                             {[
-                                { 
-                                    step: "1", 
-                                    title: "Code Ingestion", 
+                                {
+                                    step: "1",
+                                    title: "Code Ingestion",
                                     desc: "Upload legacy source files via drag-and-drop interface, ZIP archive extraction, or direct code paste. Supports Java, PHP, Python, JavaScript, TypeScript, SQL, and COBOL.",
                                     icon: Upload,
-                                    color: "primary"
+                                    bgColor: "bg-primary",
+                                    textColor: "text-primary-foreground",
+                                    iconColor: "text-primary"
                                 },
-                                { 
-                                    step: "2", 
-                                    title: "AI-Powered Analysis", 
+                                {
+                                    step: "2",
+                                    title: "AI-Powered Analysis",
                                     desc: "IBM watsonx.ai Granite 4H Small model performs deep semantic analysis, extracting business entities, relationships, implicit database schemas, and architectural patterns with full contextual understanding.",
                                     icon: Cpu,
-                                    color: "chart-2"
+                                    bgColor: "bg-chart-2",
+                                    textColor: "text-chart-2-foreground",
+                                    iconColor: "text-chart-2"
                                 },
-                                { 
-                                    step: "3", 
-                                    title: "Blueprint Generation", 
+                                {
+                                    step: "3",
+                                    title: "Blueprint Generation",
                                     desc: "Automated generation of comprehensive modernization artifacts: ER diagrams (Mermaid.js), normalized SQL schemas (PostgreSQL), Clean Architecture folder structures, and RESTful API contracts.",
                                     icon: GitBranch,
-                                    color: "chart-3"
+                                    bgColor: "bg-chart-3",
+                                    textColor: "text-chart-3-foreground",
+                                    iconColor: "text-chart-3"
                                 },
-                                { 
-                                    step: "4", 
-                                    title: "Export & Implementation", 
+                                {
+                                    step: "4",
+                                    title: "Export & Implementation",
                                     desc: "One-click download of complete project scaffold as ZIP archive containing TypeORM entities, NestJS services, controller templates, and production-ready configuration files.",
                                     icon: Download,
-                                    color: "chart-4"
+                                    bgColor: "bg-chart-4",
+                                    textColor: "text-chart-4-foreground",
+                                    iconColor: "text-chart-4"
                                 },
                             ].map((step, i) => (
                                 <div key={i} className="relative flex items-start gap-8 mb-12 last:mb-0 group">
-                                    <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-4 border-background bg-${step.color} text-${step.color}-foreground font-bold shadow-lg z-10 group-hover:scale-110 transition-transform duration-300`}>
+                                    <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-border ${step.bgColor} ${step.textColor} font-bold shadow-lg z-10 group-hover:scale-110 transition-transform duration-300`}>
                                         <span className="text-xl">{step.step}</span>
                                     </div>
                                     <Card className="flex-1 bg-gradient-to-br from-card to-card/50 border-border/50 group-hover:border-primary/30 group-hover:shadow-lg transition-all duration-300">
                                         <CardHeader className="pb-3">
                                             <div className="flex items-center gap-3 mb-2">
-                                                <step.icon className={`h-5 w-5 text-${step.color}`} />
+                                                <step.icon className={`h-5 w-5 ${step.iconColor}`} />
                                                 <CardTitle className="text-xl font-bold text-foreground">{step.title}</CardTitle>
                                             </div>
                                         </CardHeader>
@@ -390,9 +390,7 @@ export default function DocsPage() {
                     {/* Technical Specifications */}
                     <section className="space-y-8">
                         <div className="flex items-center gap-4 pb-6 border-b-2 border-border">
-                            <div className="p-3 bg-gradient-to-br from-chart-3/20 to-chart-3/5 rounded-xl border border-chart-3/20">
-                                <Layers className="h-7 w-7 text-chart-3" />
-                            </div>
+                            <Layers className="h-8 w-8 text-chart-3" />
                             <div>
                                 <h2 className="text-4xl font-bold tracking-tight text-foreground">Technical Specifications</h2>
                                 <p className="text-muted-foreground mt-1">Enterprise technology stack and capabilities</p>
