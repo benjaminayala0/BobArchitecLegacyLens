@@ -166,7 +166,7 @@ bob-arch-legacylens/
 │   │   ├── ui/                       # 60+ Shadcn/Base UI components
 │   │   ├── analysis-panel.tsx        # Real-time analysis progress display
 │   │   ├── api-contract.tsx          # REST API documentation viewer
-│   │   ├── code-viewer.tsx           # Before/After code comparison
+│   │   ├── code-viewer.tsx           # Legacy code viewer with syntax highlighting
 │   │   ├── database-schema.tsx       # SQL schema display with syntax highlighting
 │   │   ├── er-diagram.tsx            # Interactive Mermaid.js ER diagram
 │   │   ├── folder-scaffolding.tsx    # Clean Architecture folder tree
@@ -226,7 +226,7 @@ bob-arch-legacylens/
 ### Visual Effects
 - **Glassmorphism cards** with backdrop blur
 - **Subtle gradient borders** on interactive elements
-- **Smooth animations** powered by Framer Motion v12
+- **Smooth CSS animations and transitions**
 - **Responsive grid layouts** with Tailwind CSS v4
 - **Dark/Light theme support** with next-themes
 
@@ -261,7 +261,7 @@ bob-arch-legacylens/
 ### ✅ UI/UX
 - **Dark/Light Theme** — Persistent theme preference with next-themes
 - **Responsive Design** — Optimized for mobile, tablet, and desktop
-- **Split-view Comparison** — Before/After code side-by-side
+- **Legacy Code Inspector** — Syntax-highlighted source code viewer
 - **Interactive Components** — 60+ Shadcn/Base UI components
 - **Drag & Drop Upload** — Intuitive file upload experience
 
