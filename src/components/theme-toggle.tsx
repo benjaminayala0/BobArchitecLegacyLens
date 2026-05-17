@@ -31,6 +31,9 @@ export function ThemeToggle({ className }: { className?: string }) {
         return <Button variant="outline" size="icon" className={cn("rounded-full h-10 w-10", className)} disabled />
     }
 
+    // Determine the actual theme being displayed (resolve "system" to actual theme)
+    const isDark = theme === "dark" || (theme === "system" && typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+
     return (
         <Button
             variant="outline"
@@ -39,11 +42,11 @@ export function ThemeToggle({ className }: { className?: string }) {
             className={cn("rounded-full border-sidebar-border bg-transparent h-10 w-10", className)}
         >
             <Sun className={cn("h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all duration-200", {
-                "-rotate-90 scale-0": theme === "dark" || theme === "system",
+                "-rotate-90 scale-0": isDark,
             })} />
 
             <Moon className={cn("absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all duration-200", {
-                "rotate-0 scale-100": theme === "dark",
+                "rotate-0 scale-100": isDark,
             })} />
             <span className="sr-only">Toggle theme</span>
         </Button>

@@ -1,6 +1,4 @@
 <?php
-// legacy_patient_zero.php
-// WARNING: This is intentional spaghetti code for testing LegacyLens.
 
 $conn = mysqli_connect("localhost", "root", "", "old_system_db");
 

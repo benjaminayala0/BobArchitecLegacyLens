@@ -131,7 +131,7 @@ export function CodeViewer({ blueprint }: CodeViewerProps) {
             <Card className="bg-card border-border">
                 <CardHeader className="pb-2 flex flex-row items-center justify-between">
                     <CardTitle className="text-sm font-bold text-foreground">
-                        Before and After Code Viewer
+                        Legacy Code Viewer
                     </CardTitle>
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsExpanded(true)}>
                         <Maximize2 className="h-4 w-4" />
@@ -150,7 +150,7 @@ export function CodeViewer({ blueprint }: CodeViewerProps) {
                 <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm p-8">
                     <div className="h-full flex flex-col">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-2xl font-semibold text-foreground">Before and After Code Viewer</h2>
+                            <h2 className="text-2xl font-semibold text-foreground">Legacy Code Viewer</h2>
                             <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)}>
                                 <X className="h-6 w-6" />
                             </Button>
