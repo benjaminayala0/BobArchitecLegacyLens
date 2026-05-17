@@ -22,7 +22,8 @@ export function generateMermaidERDiagram(blueprint: BobBlueprint): string {
   blueprint.entities.forEach((entity: Entity) => {
     mermaidStr += `    ${entity.name} {\n`;
     entity.fields.forEach((field: Field) => {
-      const type = field.type.replace(/[^a-zA-Z0-9_]/g, "_"); // Mermaid doesn't like special characters in types
+      const rawType = field.type || "varchar";
+      const type = rawType.replace(/[^a-zA-Z0-9_]/g, "_"); // Mermaid doesn't like special characters in types
       const pkMarker = field.primary_key ? " PK" : "";
       const fkMarker = field.foreign_key ? " FK" : "";
       mermaidStr += `        ${type} ${field.name}${pkMarker}${fkMarker}\n`;
@@ -34,7 +35,7 @@ export function generateMermaidERDiagram(blueprint: BobBlueprint): string {
   if (blueprint.relationships && blueprint.relationships.length > 0) {
     blueprint.relationships.forEach((rel: Relationship) => {
       let relationshipLine = "";
-      
+
       // Determine Mermaid cardinality syntax based on relationship type
       switch (rel.type) {
         case "one-to-many":

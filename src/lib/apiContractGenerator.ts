@@ -13,14 +13,14 @@ import { BobBlueprint, Entity, Field, validateBlueprint } from '@/types/blueprin
  */
 function getExampleValue(type: string): any {
   const normalized = type.toLowerCase().trim();
-  
+
   if (normalized.includes("string") || normalized.includes("text")) return "string";
   if (normalized.includes("int") || normalized.includes("integer")) return 0;
   if (normalized.includes("decimal") || normalized.includes("float")) return 0.0;
   if (normalized.includes("date") && !normalized.includes("time")) return "2024-01-01";
   if (normalized.includes("datetime") || normalized.includes("timestamp")) return "2024-01-01T00:00:00Z";
   if (normalized.includes("bool") || normalized.includes("boolean")) return false;
-  
+
   return "string"; // fallback
 }
 
@@ -32,16 +32,16 @@ function getExampleValue(type: string): any {
  */
 function generateRequestBody(entity: Entity, excludePrimaryKey: boolean = true): string {
   const bodyObj: Record<string, any> = {};
-  
+
   entity.fields.forEach((field: Field) => {
     // Skip primary keys for POST requests (usually auto-generated)
     if (excludePrimaryKey && field.primary_key) {
       return;
     }
-    
+
     bodyObj[field.name] = getExampleValue(field.type);
   });
-  
+
   return JSON.stringify(bodyObj, null, 2);
 }
 
@@ -52,7 +52,7 @@ function generateRequestBody(entity: Entity, excludePrimaryKey: boolean = true):
  */
 function pluralize(entityName: string): string {
   const lower = entityName.toLowerCase();
-  
+
   // Simple pluralization rules
   if (lower.endsWith('y')) {
     return lower.slice(0, -1) + 'ies';
@@ -60,7 +60,7 @@ function pluralize(entityName: string): string {
   if (lower.endsWith('s') || lower.endsWith('x') || lower.endsWith('ch') || lower.endsWith('sh')) {
     return lower + 'es';
   }
-  
+
   return lower + 's';
 }
 
@@ -83,11 +83,11 @@ export function generateApiContract(blueprint: BobBlueprint): string {
   blueprint.entities.forEach((entity: Entity) => {
     const entityNamePlural = pluralize(entity.name);
     const basePath = `/api/${entityNamePlural}`;
-    
+
     markdown += `## ${entity.name}\n\n`;
     markdown += `**Base Path:** \`${basePath}\`\n\n`;
     markdown += `**Table:** \`${entity.table}\`\n\n`;
-    
+
     // GET All
     markdown += `### GET ${basePath}\n\n`;
     markdown += `**Description:** Retrieve all ${entityNamePlural}\n\n`;
@@ -102,11 +102,11 @@ export function generateApiContract(blueprint: BobBlueprint): string {
     markdown += "  }\n";
     markdown += "]\n";
     markdown += "```\n\n";
-    
+
     // GET by ID
     const primaryKeyField = entity.fields.find((f: Field) => f.primary_key);
     const idParam = primaryKeyField ? primaryKeyField.name : "id";
-    
+
     markdown += `### GET ${basePath}/{${idParam}}\n\n`;
     markdown += `**Description:** Retrieve a single ${entity.name} by ${idParam}\n\n`;
     markdown += `**Parameters:**\n`;
@@ -120,7 +120,7 @@ export function generateApiContract(blueprint: BobBlueprint): string {
     });
     markdown += "}\n";
     markdown += "```\n\n";
-    
+
     // POST
     markdown += `### POST ${basePath}\n\n`;
     markdown += `**Description:** Create a new ${entity.name}\n\n`;
@@ -137,7 +137,7 @@ export function generateApiContract(blueprint: BobBlueprint): string {
     });
     markdown += "}\n";
     markdown += "```\n\n";
-    
+
     // PUT
     markdown += `### PUT ${basePath}/{${idParam}}\n\n`;
     markdown += `**Description:** Update an existing ${entity.name}\n\n`;
@@ -156,14 +156,14 @@ export function generateApiContract(blueprint: BobBlueprint): string {
     });
     markdown += "}\n";
     markdown += "```\n\n";
-    
+
     // DELETE
     markdown += `### DELETE ${basePath}/{${idParam}}\n\n`;
     markdown += `**Description:** Delete a ${entity.name}\n\n`;
     markdown += `**Parameters:**\n`;
     markdown += `- \`${idParam}\` (path parameter): The unique identifier\n\n`;
     markdown += `**Response:** \`204 No Content\`\n\n`;
-    
+
     markdown += "---\n\n";
   });
 

@@ -84,6 +84,18 @@ export default function BlueprintAI() {
     await analyzeCode(code)
   }
 
+  const handleZipUpload = async (zipBase64: string) => {
+    setIsAnalyzing(true)
+    setAnalysisComplete(false)
+    setError(null)
+    setBlueprintData(null)
+    await analyzeCode(undefined, zipBase64)
+  }
+
+  const handleAnalysisComplete = () => {
+    setAnalysisComplete(true)
+  }
+
   const analyzeCode = async (code: string) => {
     try {
       setActiveCode(code)
@@ -178,9 +190,9 @@ export default function BlueprintAI() {
     // Generate entity files
     if (fileName.includes('Entity') || fileName.includes('Model')) {
       const entityName = fileName.replace(/\.(ts|js)$/, '').replace(/Entity|Model/, '')
-      const entity = blueprint.entities.find(e => e.name.toLowerCase() === entityName.toLowerCase())
+      const entity = blueprint.entities?.find(e => e?.name?.toLowerCase() === entityName.toLowerCase())
 
-      if (entity) {
+      if (entity && Array.isArray(entity.fields)) {
         return `import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('${entity.table}')
@@ -244,11 +256,12 @@ export class ${serviceName} {
       case 'md':
         return `# ${fileName.replace('.md', '')}\n\nGenerated documentation.\n`
       case 'sql':
-        return blueprint.entities.map(e =>
-          `CREATE TABLE ${e.table} (\n${e.fields.map(f =>
-            `  ${f.name} ${f.type.toUpperCase()}${f.primary_key ? ' PRIMARY KEY' : ''}${f.nullable === false ? ' NOT NULL' : ''}`
-          ).join(',\n')}\n);\n`
-        ).join('\n\n')
+        return blueprint.entities?.map(e => {
+          if (!e?.fields || !Array.isArray(e.fields)) return '';
+          return `CREATE TABLE ${e.table} (\n${e.fields.map(f =>
+            `  ${f.name} ${(f.type || 'varchar').toUpperCase()}${f.primary_key ? ' PRIMARY KEY' : ''}${f.nullable === false ? ' NOT NULL' : ''}`
+          ).join(',\n')}\n);\n`;
+        }).filter(Boolean).join('\n\n') || ''
       default:
         return `// ${fileName}\n// TODO: Implement\n`
     }
@@ -293,13 +306,32 @@ export class ${serviceName} {
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
+
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
             <div className="flex gap-6 items-start">
-              <div className="flex-1 min-w-0">
-                <UploadZone onUpload={handleUpload} onCodePaste={handleCodePaste} />
+              <div className="flex-1 min-w-0 relative">
+                <UploadZone
+                  onUpload={handleUpload}
+                  onCodePaste={handleCodePaste}
+                  onZipUpload={handleZipUpload}
+                />
+
+                {isAnalyzing && (
+                  <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center gap-4 z-10">
+                    <div className="relative h-16 w-16">
+                      <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
+                      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin" />
+                    </div>
+
+                    <div className="text-center space-y-1">
+                      <p className="text-sm font-medium text-foreground">IBM Bob Analyzing...</p>
+                      <p className="text-xs text-muted-foreground">Processing your legacy code</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {isAnalyzing && (

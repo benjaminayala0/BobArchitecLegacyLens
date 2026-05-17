@@ -168,13 +168,12 @@ export async function POST(req: Request) {
 
     const parseJSON = (text: string) => {
       let cleaned = text.trim()
-      cleaned = cleaned.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim()
+      cleaned = cleaned.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim()
       const first = cleaned.indexOf('{')
       const last = cleaned.lastIndexOf('}')
       if (first !== -1 && last !== -1) cleaned = cleaned.substring(first, last + 1)
 
       // Fix unescaped control characters inside JSON strings
-      // Walk char by char to find string boundaries and escape newlines within them
       let result = ''
       let inString = false
       let escaped = false
@@ -201,7 +200,6 @@ export async function POST(req: Request) {
         }
 
         if (inString) {
-          // Escape control characters inside strings
           if (char === '\n') { result += '\\n'; continue }
           if (char === '\r') { result += '\\r'; continue }
           if (char === '\t') { result += '\\t'; continue }
@@ -212,31 +210,39 @@ export async function POST(req: Request) {
 
       cleaned = result
 
+      // Remove trailing commas in arrays and objects (common LLM mistake)
+      cleaned = cleaned.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']')
+
       try {
         return JSON.parse(cleaned)
       } catch {
-        // Close unterminated string
-        let inStr = false
-        let esc = false
-        for (let i = 0; i < cleaned.length; i++) {
-          const c = cleaned[i]
-          if (esc) { esc = false; continue }
-          if (c === '\\') { esc = true; continue }
-          if (c === '"') inStr = !inStr
+        try {
+          // Close unterminated string
+          let inStr = false
+          let esc = false
+          for (let i = 0; i < cleaned.length; i++) {
+            const c = cleaned[i]
+            if (esc) { esc = false; continue }
+            if (c === '\\') { esc = true; continue }
+            if (c === '"') inStr = !inStr
+          }
+          if (inStr) cleaned += '"'
+
+          cleaned = cleaned.replace(/,\s*$/, '')
+
+          const openBrackets = (cleaned.match(/\[/g) || []).length
+          const closeBrackets = (cleaned.match(/\]/g) || []).length
+          const openBraces = (cleaned.match(/{/g) || []).length
+          const closeBraces = (cleaned.match(/}/g) || []).length
+
+          cleaned += ']'.repeat(Math.max(0, openBrackets - closeBrackets))
+          cleaned += '}'.repeat(Math.max(0, openBraces - closeBraces))
+
+          return JSON.parse(cleaned)
+        } catch (e) {
+          console.error("Critical JSON parse failure after recovery attempts:", e);
+          throw new Error("Invalid JSON format from AI model");
         }
-        if (inStr) cleaned += '"'
-
-        cleaned = cleaned.replace(/,\s*$/, '')
-
-        const openBrackets = (cleaned.match(/\[/g) || []).length
-        const closeBrackets = (cleaned.match(/\]/g) || []).length
-        const openBraces = (cleaned.match(/{/g) || []).length
-        const closeBraces = (cleaned.match(/}/g) || []).length
-
-        cleaned += ']'.repeat(Math.max(0, openBrackets - closeBrackets))
-        cleaned += '}'.repeat(Math.max(0, openBraces - closeBraces))
-
-        return JSON.parse(cleaned)
       }
     }
 
@@ -294,20 +300,22 @@ CRITICAL RULES:
     catch (e) {
       console.error('Structure parse error:', e)
       console.error('Structure raw text:', structureText)
-      throw new Error('Failed to parse structure response')
+      structureData = {
+        entities: [],
+        relationships: [],
+        suggested_folder_structure: {}
+      }
     }
 
     try { codeData = parseJSON(codeText) }
     catch (e) {
       console.error('Code parse error:', e)
-      console.error('Code raw text:', codeText)
-      throw new Error('Failed to parse code response')
+      codeData = { databaseSchema: "", erDiagram: "", apiContracts: [] }
     }
 
     try { modernData = parseJSON(modernText) }
     catch (e) {
       console.error('Modern parse error:', e)
-      console.error('Modern raw text:', modernText)
       modernData = { modernizedCode: '// Could not generate modernized code' }
     }
 

@@ -225,14 +225,14 @@ export function FolderScaffolding({ blueprint }: FolderScaffoldingProps) {
 
         const ext = fileName.split('.').pop()?.toLowerCase()
         const baseName = fileName.replace(/\.(ts|js|tsx|jsx)$/, '')
-        
+
         // Try to match entity by name (handles "Student.ts", "StudentEntity.ts", "student.entity.ts" etc.)
         const cleanName = baseName.replace(/Entity|entity|\.entity/gi, '').replace(/Model|model|\.model/gi, '')
-        const matchedEntity = blueprint.entities.find(e => 
+        const matchedEntity = blueprint.entities.find(e =>
             e.name.toLowerCase() === cleanName.toLowerCase() ||
             e.name.toLowerCase() === baseName.toLowerCase()
         )
-        
+
         // Generate entity/model files
         if (matchedEntity && (ext === 'ts' || ext === 'js') && !fileName.includes('Service') && !fileName.includes('Controller') && !fileName.includes('Repository') && !fileName.includes('Route') && !fileName.includes('Test') && !fileName.includes('test') && !fileName.includes('spec')) {
             return `import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
@@ -244,14 +244,14 @@ ${matchedEntity.fields.map(f => `  @${f.primary_key ? 'PrimaryGeneratedColumn' :
 }
 `
         }
-        
+
         // Generate service files
         if (fileName.includes('Service') || fileName.includes('service')) {
             const serviceName = baseName
             const entityName = serviceName.replace(/Service|service/gi, '')
             const entity = blueprint.entities.find(e => e.name.toLowerCase() === entityName.toLowerCase())
             const resolvedName = entity ? entity.name : entityName
-            
+
             return `import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -342,7 +342,7 @@ export class ${repoName} extends Repository<${resolvedName}> {
 }
 `
         }
-        
+
         // Default content based on extension
         switch (ext) {
             case 'ts':

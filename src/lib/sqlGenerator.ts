@@ -4,12 +4,12 @@
  * Transforms IBM Bob's blueprint into PostgreSQL CREATE TABLE statements.
  */
 
-import { 
-  BobBlueprint, 
-  Entity, 
-  Field, 
-  validateBlueprint, 
-  sanitizeSqlIdentifier 
+import {
+  BobBlueprint,
+  Entity,
+  Field,
+  validateBlueprint,
+  sanitizeSqlIdentifier
 } from '@/types/blueprint';
 
 /**
@@ -19,14 +19,14 @@ import {
  */
 function mapTypeToPostgres(type: string): string {
   const normalized = type.toLowerCase().trim();
-  
+
   if (normalized.includes("string") || normalized.includes("text")) return "VARCHAR(255)";
   if (normalized.includes("int") || normalized.includes("integer")) return "INTEGER";
   if (normalized.includes("decimal") || normalized.includes("float")) return "DECIMAL(10, 2)";
   if (normalized.includes("date") && !normalized.includes("time")) return "DATE";
   if (normalized.includes("datetime") || normalized.includes("timestamp")) return "TIMESTAMP";
   if (normalized.includes("bool") || normalized.includes("boolean")) return "BOOLEAN";
-  
+
   return "VARCHAR(255)"; // fallback
 }
 
@@ -46,17 +46,17 @@ export function generateSqlSchema(blueprint: BobBlueprint): string {
   blueprint.entities.forEach((entity: Entity) => {
     // Sanitize table name (already validated in validateBlueprint, but double-check)
     const tableName = sanitizeSqlIdentifier(entity.table, `table name for entity "${entity.name}"`);
-    
+
     sqlStr += `CREATE TABLE ${tableName} (\n`;
-    
+
     const fieldLines: string[] = [];
-    
+
     entity.fields.forEach((field: Field) => {
       // Sanitize field name
       const fieldName = sanitizeSqlIdentifier(field.name, `field name in table "${tableName}"`);
-      
+
       let line = `    ${fieldName} ${mapTypeToPostgres(field.type)}`;
-      
+
       if (field.primary_key) {
         if (field.auto_increment) {
           // Replace INTEGER with SERIAL for auto-incrementing PKs in Postgres
@@ -64,7 +64,7 @@ export function generateSqlSchema(blueprint: BobBlueprint): string {
         }
         line += " PRIMARY KEY";
       }
-      
+
       // Handle nullable constraint using type guard
       if ('nullable' in field && field.nullable === false) {
         line += " NOT NULL";
@@ -84,12 +84,12 @@ export function generateSqlSchema(blueprint: BobBlueprint): string {
         const parts = field.foreign_key.split(".");
         if (parts.length === 2) {
           const [refTable, refColumn] = parts;
-          
+
           // Sanitize foreign key references
           const sanitizedRefTable = sanitizeSqlIdentifier(refTable, "foreign key reference table");
           const sanitizedRefColumn = sanitizeSqlIdentifier(refColumn, "foreign key reference column");
           const sanitizedFieldName = sanitizeSqlIdentifier(field.name, "foreign key field");
-          
+
           fieldLines.push(
             `    FOREIGN KEY (${sanitizedFieldName}) REFERENCES ${sanitizedRefTable}(${sanitizedRefColumn}) ON DELETE CASCADE`
           );
